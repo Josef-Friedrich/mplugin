@@ -13,10 +13,21 @@ from __future__ import unicode_literals
 
 import collections
 import numbers
+import typing
 import warnings
+from typing import NamedTuple
+
+if typing.TYPE_CHECKING:
+    from .metric import Metric
+    from .state import ServiceState
 
 
-class Result(collections.namedtuple("Result", "state hint metric")):
+class Result(
+    NamedTuple(
+        "Result",
+        [("state", "ServiceState"), ("hint", str | None), ("metric", "Metric | None")],
+    )
+):
     """Evaluation outcome consisting of state and explanation.
 
     A Result object is typically emitted by a

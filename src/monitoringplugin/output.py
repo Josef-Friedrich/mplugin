@@ -1,7 +1,12 @@
-from __future__ import unicode_literals
+import typing
+from io import StringIO
+from logging import StreamHandler
+
+if typing.TYPE_CHECKING:
+    from .check import Check
 
 
-def filter_output(output, filtered):
+def filter_output(output: str, filtered: str) -> str:
     """Filters out characters from output"""
     for char in filtered:
         output = output.replace(char, "")
@@ -11,7 +16,14 @@ def filter_output(output, filtered):
 class Output(object):
     ILLEGAL = "|"
 
-    def __init__(self, logchan, verbose=0):
+    logchan: StreamHandler[StringIO]
+    verbose: int
+    status: str
+    out: list[str]
+    warnings: list[str]
+    longperfdata: list[str]
+
+    def __init__(self, logchan: StreamHandler[StringIO], verbose: int = 0):
         self.logchan = logchan
         self.verbose = verbose
         self.status = ""
@@ -19,7 +31,7 @@ class Output(object):
         self.warnings = []
         self.longperfdata = []
 
-    def add(self, check):
+    def add(self, check: "Check"):
         self.status = self.format_status(check)
         if self.verbose == 0:
             perfdata = self.format_perfdata(check)
@@ -29,7 +41,7 @@ class Output(object):
             self.add_longoutput(check.verbose_str)
             self.longperfdata.append(self.format_perfdata(check, 79))
 
-    def format_status(self, check):
+    def format_status(self, check: "Check"):
         if check.name:
             name_prefix = check.name.upper() + " "
         else:
@@ -46,13 +58,13 @@ class Output(object):
 
     # Needs refactoring, but won't remove now because it's probably API-breaking
     # pylint: disable-next=unused-argument
-    def format_perfdata(self, check, linebreak=None):
+    def format_perfdata(self, check: "Check", linebreak=None) -> str:
         if not check.perfdata:
             return ""
         out = " ".join(check.perfdata)
         return "| " + self._screen_chars(out, "perfdata")
 
-    def add_longoutput(self, text):
+    def add_longoutput(self, text: str | list[str] | tuple[str]) -> None:
         if isinstance(text, (list, tuple)):
             for line in text:
                 self.add_longoutput(line)
@@ -71,7 +83,7 @@ class Output(object):
         ]
         return "\n".join(output) + "\n"
 
-    def _screen_chars(self, text, where):
+    def _screen_chars(self, text: str, where: str) -> str:
         text = text.rstrip("\n")
         screened = filter_output(text, self.ILLEGAL)
         if screened != text:
@@ -81,7 +93,7 @@ class Output(object):
         return screened
 
     @staticmethod
-    def _illegal_chars_warning(where, removed_chars):
+    def _illegal_chars_warning(where: str, removed_chars: set[str]) -> str:
         hex_chars = ", ".join("0x{0:x}".format(ord(c)) for c in removed_chars)
         return "warning: removed illegal characters ({0}) from {1}".format(
             hex_chars, where

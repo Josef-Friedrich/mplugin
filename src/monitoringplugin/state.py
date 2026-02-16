@@ -9,16 +9,16 @@ class has not been named `Warning` to avoid being confused with the
 built-in Python exception of the same name.
 """
 
-import collections
 import functools
+import typing
 
 
-def worst(states):
+def worst(states: list["ServiceState"]) -> "ServiceState":
     """Reduce list of *states* to the most significant state."""
     return functools.reduce(lambda a, b: a if a > b else b, states, Ok)
 
 
-class ServiceState(collections.namedtuple("ServiceState", "code text")):
+class ServiceState(typing.NamedTuple("ServiceState", [("code", int), ("text", str)])):
     """Abstract base class for all states.
 
     Each state has two constant attributes: :attr:`text` is the short

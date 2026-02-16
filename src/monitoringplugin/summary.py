@@ -15,7 +15,12 @@ implementation that gets the output to the point.
 
 from __future__ import unicode_literals
 
+import typing
+
 from .state import Ok
+
+if typing.TYPE_CHECKING:
+    from .result import Results
 
 
 class Summary(object):
@@ -32,7 +37,7 @@ class Summary(object):
     # should probably be an @abstractmethod.
     # See issue #44
     # pylint: disable-next=no-self-use
-    def ok(self, results):
+    def ok(self, results: "Results") -> str:
         """Formats status line when overall state is ok.
 
         The default implementation returns a string representation of
@@ -49,7 +54,7 @@ class Summary(object):
     # should probably be an @abstractmethod.
     # See issue #44
     # pylint: disable-next=no-self-use
-    def problem(self, results):
+    def problem(self, results: "Results") -> str:
         """Formats status line when overall state is not ok.
 
         The default implementation returns a string representation of te
@@ -67,7 +72,7 @@ class Summary(object):
     # should probably be an @abstractmethod.
     # See issue #44
     # pylint: disable-next=no-self-use
-    def verbose(self, results):
+    def verbose(self, results: "Results") -> list[str]:
         """Provides extra lines if verbose plugin execution is requested.
 
         The default implementation returns a list of all resources that are in
@@ -76,7 +81,7 @@ class Summary(object):
         :param results: :class:`~.result.Results` container
         :returns: list of strings
         """
-        msgs = []
+        msgs: list[str] = []
         for result in results:
             if result.state == Ok:
                 continue
@@ -89,7 +94,7 @@ class Summary(object):
     # should probably be an @abstractmethod.
     # See issue #44
     # pylint: disable-next=no-self-use
-    def empty(self):
+    def empty(self) -> typing.Literal["no check results"]:
         """Formats status line when the result set is empty.
 
         :returns: status line
