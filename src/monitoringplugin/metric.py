@@ -6,13 +6,43 @@ Typically, :class:`~.resource.Resource` objects emit a list of metrics
 as result of their :meth:`~.resource.Resource.probe` methods.
 """
 
-import collections
 import numbers
+import typing
+from typing import Any, NamedTuple, Optional, Self, TypedDict, Unpack
+
+from monitoringplugin.performance import Performance
+
+if typing.TYPE_CHECKING:
+    from monitoringplugin.result import Result
+
+    from .context import Context
+    from .resource import Resource
+
+
+class MetricKwargs(TypedDict, total=False):
+    name: str
+    value: Any
+    uom: str
+    min: float
+    max: float
+    context: str
+    contextobj: "Context"
+    resource: "Resource"
 
 
 class Metric(
-    collections.namedtuple(
-        "Metric", "name value uom min max context contextobj resource"
+    NamedTuple(
+        "Metric",
+        [
+            ("name", str),
+            ("value", Any),
+            ("uom", str),
+            ("min", float),
+            ("max", float),
+            ("context", str),
+            ("contextobj", "Context"),
+            ("resource", "Resource"),
+        ],
     )
 ):
     """Single measured value.
@@ -26,15 +56,15 @@ class Metric(
     # pylint: disable-next=redefined-builtin
     def __new__(
         cls,
-        name,
-        value,
-        uom=None,
-        min=None,
-        max=None,
-        context=None,
-        contextobj=None,
-        resource=None,
-    ):
+        name: str,
+        value: Any,
+        uom: Optional[str] = None,
+        min: Optional[float] = None,
+        max: Optional[float] = None,
+        context: Optional[str] = None,
+        contextobj: Optional["Context"] = None,
+        resource: Optional["Resource"] = None,
+    ) -> Self:
         """Creates new Metric instance.
 
         :param name: short internal identifier for the value -- appears
@@ -61,7 +91,7 @@ class Metric(
         """Same as :attr:`valueunit`."""
         return self.valueunit
 
-    def replace(self, **attr):
+    def replace(self, **attr: Unpack[MetricKwargs]) -> Self:
         """Creates new instance with updated attributes."""
         return self._replace(**attr)
 
@@ -79,7 +109,7 @@ class Metric(
         return str(self)
 
     @property
-    def valueunit(self):
+    def valueunit(self) -> str:
         """Compact string representation.
 
         This is just the value and the unit. If the value is a real
@@ -89,7 +119,7 @@ class Metric(
         return "%s%s" % (self._human_readable_value, self.uom or "")
 
     @property
-    def _human_readable_value(self):
+    def _human_readable_value(self) -> str:
         """Limit number of digits for floats."""
         if isinstance(self.value, numbers.Real) and not isinstance(
             self.value, numbers.Integral
@@ -97,7 +127,7 @@ class Metric(
             return "%.4g" % self.value
         return str(self.value)
 
-    def evaluate(self):
+    def evaluate(self) -> "Result":
         """Evaluates this instance according to the context.
 
         :return: :class:`~monitoringplugin.result.Result` object
@@ -107,7 +137,7 @@ class Metric(
             raise RuntimeError("no context set for metric", self.name)
         return self.contextobj.evaluate(self, self.resource)
 
-    def performance(self):
+    def performance(self) -> Optional[Performance]:
         """Generates performance data according to the context.
 
         :return: :class:`~monitoringplugin.performance.Performance` object

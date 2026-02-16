@@ -15,19 +15,16 @@ import collections
 import numbers
 import typing
 import warnings
-from typing import NamedTuple
+from typing import Literal, Optional
 
 if typing.TYPE_CHECKING:
+    from .context import Context
     from .metric import Metric
+    from .resource import Resource
     from .state import ServiceState
 
 
-class Result(
-    NamedTuple(
-        "Result",
-        [("state", "ServiceState"), ("hint", str | None), ("metric", "Metric | None")],
-    )
-):
+class Result:
     """Evaluation outcome consisting of state and explanation.
 
     A Result object is typically emitted by a
@@ -37,16 +34,21 @@ class Result(
     Plugin authors may subclass Result to implement specific features.
     """
 
-    def __new__(cls, state, hint=None, metric=None):
-        """Creates a Result object.
+    state: "ServiceState"
 
-        :param state: state object
-        :param hint: reason why this result arose
-        :param metric: reference to the
-            :class:`~monitoringplugin.metric.Metric` from which this result
-            was derived
-        """
-        return tuple.__new__(cls, (state, hint, metric))
+    hint: Optional[str]
+
+    metric: Optional["Metric"]
+
+    def __init__(
+        self,
+        state: "ServiceState",
+        hint: Optional[str] = None,
+        metric: Optional["Metric"] = None,
+    ) -> None:
+        self.state = state
+        self.hint = hint
+        self.metric = metric
 
     def __str__(self):
         """Textual result explanation.
@@ -73,18 +75,27 @@ class Result(
         return ""
 
     @property
-    def resource(self):
+    def resource(self) -> Optional["Resource"]:
         """Reference to the resource used to generate this result."""
         if not self.metric:
             return None
         return self.metric.resource
 
     @property
-    def context(self):
+    def context(self) -> Optional["Context"]:
         """Reference to the metric used to generate this result."""
         if not self.metric:
             return None
         return self.metric.contextobj
+
+    def __eq__(self, value: object) -> bool:
+        if not isinstance(value, Result):
+            return False
+        return (
+            self.state == value.state
+            and self.hint == value.hint
+            and self.metric == value.metric
+        )
 
 
 class ScalarResult(Result):  # pragma: no cover
@@ -93,7 +104,12 @@ class ScalarResult(Result):  # pragma: no cover
     DEPRECATED: use Result instead.
     """
 
-    def __new__(cls, state, hint, metric):
+    def __new__(
+        cls,
+        state: "ServiceState",
+        hint: Optional[str] = None,
+        metric: Optional["Metric"] = None,
+    ):
         warnings.warn(
             "ScalarResult is deprecated, use Result instead!", DeprecationWarning
         )
@@ -112,14 +128,18 @@ class Results:
     adds them to the container.
     """
 
-    def __init__(self, *results):
+    results: list[Result]
+    by_state: dict[Literal[0, 1, 2, 3], Result]
+    by_name: dict[str, Result]
+
+    def __init__(self, *results: Result) -> None:
         self.results = []
         self.by_state = collections.defaultdict(list)
         self.by_name = {}
         if results:
             self.add(*results)
 
-    def add(self, *results):
+    def add(self, *results: Result):
         """Adds more results to the container.
 
         Besides passing :class:`Result` objects in the constructor,

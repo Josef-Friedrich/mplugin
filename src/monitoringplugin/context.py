@@ -12,14 +12,33 @@ Sometimes is better to subclass :class:`Context` instead to implement custom
 evaluation or performance data logic.
 """
 
+import typing
+from typing import Callable, Optional
+
 from .performance import Performance
 from .range import Range
 from .result import Result
 from .state import Critical, Ok, Warn
 
+if typing.TYPE_CHECKING:
+    from .context import Context
+    from .metric import Metric
+    from .resource import Resource
+
+FmtMetric = str | Callable[["Metric", "Context"], str]
+
 
 class Context(object):
-    def __init__(self, name, fmt_metric=None, result_cls=Result):
+    name: str
+    fmt_metric: Optional[FmtMetric]
+    result_cls: type[Result]
+
+    def __init__(
+        self,
+        name: str,
+        fmt_metric: Optional[FmtMetric] = None,
+        result_cls: type[Result] = Result,
+    ) -> None:
         """Creates generic context identified by `name`.
 
         Generic contexts just format associated metrics and evaluate
@@ -33,14 +52,14 @@ class Context(object):
         :param fmt_metric: string or callable to convert
             context and associated metric to a human readable string
         :param result_cls: use this class (usually a
-            :class:`~.result.Result` subclass) to represent the
+            :class:`~.result.Result` subclass) to represent the<
             evaluation outcome
         """
         self.name = name
         self.fmt_metric = fmt_metric
         self.result_cls = result_cls
 
-    def evaluate(self, metric, resource):
+    def evaluate(self, metric: "Metric", resource: "Resource") -> Result:
         """Determines state of a given metric.
 
         This base implementation returns :class:`~monitoringplugin.state.Ok`
@@ -58,7 +77,9 @@ class Context(object):
     # This could be corrected by re-implementing this class as a proper ABC.
     # See issue #43
     # pylint: disable-next=no-self-use
-    def performance(self, metric, resource):
+    def performance(
+        self, metric: "Metric", resource: "Resource"
+    ) -> Optional[Performance]:
         """Derives performance data from a given metric.
 
         This base implementation just returns none. Plugin authors may
@@ -72,7 +93,7 @@ class Context(object):
         """
         return None
 
-    def describe(self, metric):
+    def describe(self, metric: "Metric") -> Optional[str]:
         """Provides human-readable metric description.
 
         Formats the metric according to the :attr:`fmt_metric`
@@ -91,9 +112,7 @@ class Context(object):
         if not self.fmt_metric:
             return None
 
-        try:
-            return self.fmt_metric(metric, self)
-        except TypeError:
+        if isinstance(self.fmt_metric, str):
             return self.fmt_metric.format(
                 name=metric.name,
                 value=metric.value,
@@ -103,15 +122,17 @@ class Context(object):
                 max=metric.max,
             )
 
+        return self.fmt_metric(metric, self)
+
 
 class ScalarContext(Context):
     def __init__(
         self,
-        name,
+        name: str,
         warning=None,
         critical=None,
-        fmt_metric="{name} is {valueunit}",
-        result_cls=Result,
+        fmt_metric: FmtMetric = "{name} is {valueunit}",
+        result_cls: type[Result] = Result,
     ):
         """Ready-to-use :class:`Context` subclass for scalar values.
 
@@ -175,15 +196,17 @@ class ScalarContext(Context):
 class Contexts:
     """Container for collecting all generated contexts."""
 
+    by_name: dict[str, Context]
+
     def __init__(self):
         self.by_name = dict(
             default=ScalarContext("default", "", ""), null=Context("null")
         )
 
-    def add(self, context):
+    def add(self, context: Context) -> None:
         self.by_name[context.name] = context
 
-    def __getitem__(self, context_name):
+    def __getitem__(self, context_name: str) -> Context:
         try:
             return self.by_name[context_name]
         except KeyError:
@@ -193,8 +216,8 @@ class Contexts:
                 "known contexts: {0}".format(", ".join(self.by_name.keys())),
             )
 
-    def __contains__(self, context_name):
+    def __contains__(self, context_name: str) -> bool:
         return context_name in self.by_name
 
-    def __iter__(self):
+    def __iter__(self) -> typing.Iterator[str]:
         return iter(self.by_name)
