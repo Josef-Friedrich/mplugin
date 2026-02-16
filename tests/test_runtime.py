@@ -7,8 +7,6 @@ from monitoringplugin.compat import StringIO
 from monitoringplugin.runtime import Runtime, guarded
 
 
-
-
 def make_check():
     class Check(object):
         summary_str = "summary"

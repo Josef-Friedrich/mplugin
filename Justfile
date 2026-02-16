@@ -1,5 +1,5 @@
 # Run all recipes
-all: upgrade test format docs lint type_check
+all: upgrade test format lint type_check
 
 # Execute the tests
 test:
@@ -39,28 +39,10 @@ format:
 	uv tool run ruff check --select I --fix .
 	uv tool run ruff format
 
-# Build the documentation
-docs: docs_readme_patcher docs_sphinx
-
-# Generate the README file using the readme-patcher
-docs_readme_patcher:
-	uv tool run --isolated --no-cache readme-patcher
-
-# Generate the HTML documentation using Sphinx
-docs_sphinx:
-	rm -rf docs/_build
-	uv tool run --isolated --no-cache --from sphinx --with . --with sphinx_rtd_theme --with sphinx-argparse sphinx-build -W -q docs docs/_build
-	xdg-open docs/_build/index.html
-
-# Pin the requirements for readthedocs
-pin_docs_requirements:
-	rm -rf docs/requirements.txt
-	uv run pip-compile --strip-extras --output-file=docs/requirements.txt docs/requirements.in pyproject.toml
-
 # Run ruff check
 lint:
-	uv tool run ruff check
+	uv tool run ruff check --fix
 
 # Perform type checking using mypy
 type_check:
-	uv run mypy typings src/python_boilerplate tests
+	uv run mypy src/monitoringplugin tests

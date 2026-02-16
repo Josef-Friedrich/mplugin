@@ -1,8 +1,8 @@
-# -*- coding: utf-8 -*-
 import tempfile
 
-import monitoringplugin
 import pytest
+
+import monitoringplugin
 from monitoringplugin.logtail import LogTail
 
 

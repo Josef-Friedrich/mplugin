@@ -39,9 +39,11 @@ class Load(monitoringplugin.Resource):
             load = loadavg.readline().split()[0:3]
         _log.debug("raw load is %s", load)
         cpus = self.cpus() if self.percpu else 1
-        load = [float(l) / cpus for l in load]
+        load = [float(load_value) / cpus for load_value in load]
         for i, period in enumerate([1, 5, 15]):
-            yield monitoringplugin.Metric("load%d" % period, load[i], min=0, context="load")
+            yield monitoringplugin.Metric(
+                "load%d" % period, load[i], min=0, context="load"
+            )
 
 
 # data presentation

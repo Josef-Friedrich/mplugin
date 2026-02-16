@@ -54,7 +54,7 @@ class TestContexts:
         ctx = Contexts()
         ctx.add(Context("foo"))
         assert "foo" in ctx
-        assert not "bar" in ctx
+        assert "bar" not in ctx
 
     def test_iter(self):
         ctx = Contexts()

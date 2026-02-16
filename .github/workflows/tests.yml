@@ -1,0 +1,38 @@
+---
+# https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions
+name: Tests
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version:
+          - "3.12"
+          - "3.13"
+          - "3.14"
+
+    steps:
+      # https://github.com/marketplace/actions/checkout
+      - uses: actions/checkout@v6
+
+      # https://docs.astral.sh/uv/guides/integration/github/#multiple-python-versions
+      - name: Install uv and set the Python version
+        uses: astral-sh/setup-uv@v7
+        with:
+          version: "0.10.2"
+          python-version: ${{ matrix.python-version }}
+          enable-cache: true
+
+      - name: Install the project
+        run: uv sync --locked --all-extras --dev
+
+      - name: Run tests
+        run: uv run pytest tests

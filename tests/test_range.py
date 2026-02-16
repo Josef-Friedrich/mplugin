@@ -70,10 +70,10 @@ class TestRangeParse:
 
     def test_contains(self):
         r = Range("1.7:2.5")
-        assert not 1.6 in r
+        assert 1.6 not in r
         assert 1.7 in r
         assert 2.5 in r
-        assert not 2.6 in r
+        assert 2.6 not in r
 
     def test_repr(self):
         assert "Range('2:3')" == repr(Range("2:3"))

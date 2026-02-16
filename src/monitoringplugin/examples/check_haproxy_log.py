@@ -19,8 +19,9 @@ import argparse
 import itertools
 import re
 
-import monitoringplugin
 import numpy
+
+import monitoringplugin
 
 
 class HAProxyLog(monitoringplugin.Resource):
@@ -72,7 +73,9 @@ class HAProxyLog(monitoringplugin.Resource):
         error_rate = 100 * numpy.sum(data["err"] / requests) if requests else 0
         metrics += [
             monitoringplugin.Metric("error_rate", error_rate, "%", 0, 100),
-            monitoringplugin.Metric("request_total", requests, min=0, context="default"),
+            monitoringplugin.Metric(
+                "request_total", requests, min=0, context="default"
+            ),
         ]
         return metrics
 

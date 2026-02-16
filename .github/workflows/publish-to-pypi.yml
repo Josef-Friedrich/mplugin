@@ -1,0 +1,45 @@
+---
+# Create an environment called pypi
+# https://github.com/Josef-Friedrich/<repo>/settings/environments
+
+# Create a new trusted publisher
+# https://pypi.org/manage/project/<name>/settings/publishing/
+
+# https://medium.com/@nipunweerasiri/publishing-python-packages-to-pypi-using-uv-and-github-workflows-with-trusted-publishing-47bdfab162db
+# https://docs.pypi.org/trusted-publishers/
+# https://packaging.python.org/en/latest/guides/publishing-package-distribution-releases-using-github-actions-ci-cd-workflows/
+
+
+# https://docs.astral.sh/uv/guides/integration/github/#publishing-to-pypi
+name: "Publish"
+
+on:
+  push:
+    tags:
+      # Publish on any tag starting with a `v`, e.g., v0.1.0
+      - v*
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+      - name: Install Python 3.13
+        run: uv python install 3.13
+      - name: Build
+        run: uv build
+      # Check that basic features work and we didn't miss to include crucial files
+      # - name: Smoke test (wheel)
+      #   run: uv run --isolated --no-project --with dist/*.whl tests/smoke_test.py
+      # - name: Smoke test (source distribution)
+      #   run: uv run --isolated --no-project --with dist/*.tar.gz tests/smoke_test.py
+      - name: Publish
+        run: uv publish

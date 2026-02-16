@@ -1,13 +1,9 @@
 # -*- coding: utf-8 -*-
-import monitoringplugin
 import pytest
+
+import monitoringplugin
 from monitoringplugin.result import Result, Results
 from monitoringplugin.state import Critical, Ok, Unknown, Warn
-
-try:
-    import unittest2 as unittest
-except ImportError:  # pragma: no cover
-    import unittest
 
 
 class TestResult:
@@ -98,7 +94,7 @@ class TestResults:
         r1 = Result(Unknown, "r1", monitoringplugin.Metric("m1", 1))
         results.add(r1)
         assert "m1" in results
-        assert not "m2" in results
+        assert "m2" not in results
 
     def test_add_in_init(self):
         results = Results(Result(Unknown, "r1"), Result(Unknown, "r2"))

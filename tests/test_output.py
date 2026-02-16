@@ -65,18 +65,14 @@ class TestOutput:
     def test_add_check_singleline(self):
         o = Output(self.logchan)
         o.add(FakeCheck())
-        assert """\ \
-FAKE OK - check summary | foo=1m;2;3 bar=1s;2;3 \
-""" == str(o)
+        assert "FAKE OK - check summary | foo=1m;2;3 bar=1s;2;3\n" == str(o)
 
     def test_add_check_multiline(self):
         o = Output(self.logchan, verbose=1)
         o.add(FakeCheck())
-        assert """\ \
-FAKE OK - check summary \
-hello world \
-| foo=1m;2;3 bar=1s;2;3 \
-""" == str(o)
+        assert "FAKE OK - check summary\nhello world\n| foo=1m;2;3 bar=1s;2;3\n" == str(
+            o
+        )
 
     def test_remove_illegal_chars(self):
         check = FakeCheck()
@@ -86,14 +82,10 @@ hello world \
         print("debug pipe | x", file=self.logio)
         o = Output(self.logchan, verbose=1)
         o.add(check)
-        assert """\ \
-FAKE OK - PIPE  STATUS \
-long pipe  output \
-debug pipe  x \
-warning: removed illegal characters (0x7c) from status line \
-warning: removed illegal characters (0x7c) from long output \
-warning: removed illegal characters (0x7c) from logging output \
-""" == str(o)
+        assert (
+            "FAKE OK - PIPE  STATUS\nlong pipe  output\ndebug pipe  x\nwarning: removed illegal characters (0x7c) from status line\nwarning: removed illegal characters (0x7c) from long output\nwarning: removed illegal characters (0x7c) from logging output\n"
+            == str(o)
+        )
 
     def test_long_perfdata(self):
         check = FakeCheck()
@@ -101,12 +93,10 @@ warning: removed illegal characters (0x7c) from logging output \
         check.perfdata = ["duration=340.4ms;500;1000;0"] * 5
         o = Output(self.logchan, verbose=1)
         o.add(check)
-        assert """\ \
-FAKE OK - check summary \
-| duration=340.4ms;500;1000;0 duration=340.4ms;500;1000;0 \ \
-duration=340.4ms;500;1000;0 duration=340.4ms;500;1000;0 \ \
-duration=340.4ms;500;1000;0 \
-""" == str(o)
+        assert (
+            "FAKE OK - check summary\n| duration=340.4ms;500;1000;0 duration=340.4ms;500;1000;0 duration=340.4ms;500;1000;0 duration=340.4ms;500;1000;0 duration=340.4ms;500;1000;0\n"
+            == str(o)
+        )
 
     def test_log_output_precedes_perfdata(self):
         check = FakeCheck()
@@ -114,9 +104,10 @@ duration=340.4ms;500;1000;0 \
         print("debug log output", file=self.logio)
         o = Output(self.logchan, verbose=1)
         o.add(check)
-        assert """\ \
-FAKE OK - check summary \
-hello world \
-debug log output \
-| foo=1 \
-""" == str(o)
+        assert (
+            "FAKE OK - check summary\n"
+            + "hello world\n"
+            + "debug log output\n"
+            + "| foo=1\n"
+            == str(o)
+        )
