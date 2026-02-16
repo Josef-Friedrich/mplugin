@@ -11,6 +11,12 @@ The most important resource subclass should be named after the plugin
 itself.
 """
 
+import typing
+from typing import Union
+
+if typing.TYPE_CHECKING:
+    from .metric import Metric
+
 
 class Resource(object):
     """Abstract base class for custom domain models.
@@ -20,13 +26,15 @@ class Resource(object):
     """
 
     @property
-    def name(self):
+    def name(self) -> str:
         return self.__class__.__name__
 
     # This could be corrected by re-implementing this class as a proper ABC.
     # See issue #42
     # pylint: disable=no-self-use
-    def probe(self):
+    def probe(
+        self,
+    ) -> Union[list["Metric"], "Metric", typing.Generator["Metric", None, None]]:
         """Query system state and return metrics.
 
         This is the only method called by the check controller.

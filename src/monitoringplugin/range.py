@@ -101,3 +101,6 @@ class Range(collections.namedtuple("Range", "invert start end")):
     def violation(self):
         """Human-readable description why a value does not match."""
         return "outside range {0}".format(self._format(False))
+
+
+RangOrString = Range | str

@@ -11,32 +11,54 @@ their respective base unit, so `Performance('size', 10000, 'B')` is better
 than `Performance('size', 10, 'kB')`.
 """
 
-import collections
 import itertools
 import re
+import typing
+from typing import Any, Literal, NamedTuple, Optional
+
+if typing.TYPE_CHECKING:
+    from .range import RangOrString
 
 
-def zap_none(val):
+def zap_none(val: Any | None) -> Any | Literal[""]:
     if val is None:
         return ""
     return val
 
 
-def quote(label):
+def quote(label: str) -> str:
     if re.match(r"^\w+$", label):
         return label
     return "'%s'" % label
 
 
 class Performance(
-    collections.namedtuple(
-        "Performance", ["label", "value", "uom", "warn", "crit", "min", "max"]
+    NamedTuple(
+        "Performance",
+        [
+            ("label", str),
+            ("value", Any),
+            ("uom", str),
+            ("warn", "RangOrString"),
+            ("crit", "RangOrString"),
+            ("min", float),
+            ("max", float),
+        ],
     )
 ):
     # Changing these now would be API-breaking, so we'll ignore these
     # shadowed built-ins and the long list of arguments
     # pylint: disable-next=redefined-builtin,too-many-arguments
-    def __new__(cls, label, value, uom="", warn="", crit="", min="", max=""):
+    def __new__(
+        cls,
+        label: str,
+        value: Any,
+        uom: str = "",
+        warn: "RangOrString" = "",
+        crit: "RangOrString" = "",
+        min: Optional[float] = None,
+        max: Optional[float] = None,
+    ):  # noqa: F821
         """Create new performance data object.
 
         :param label: short identifier, results in graph

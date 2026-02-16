@@ -23,7 +23,7 @@ class Output(object):
     warnings: list[str]
     longperfdata: list[str]
 
-    def __init__(self, logchan: StreamHandler[StringIO], verbose: int = 0):
+    def __init__(self, logchan: StreamHandler[StringIO], verbose: int = 0) -> None:
         self.logchan = logchan
         self.verbose = verbose
         self.status = ""
@@ -31,7 +31,7 @@ class Output(object):
         self.warnings = []
         self.longperfdata = []
 
-    def add(self, check: "Check"):
+    def add(self, check: "Check") -> None:
         self.status = self.format_status(check)
         if self.verbose == 0:
             perfdata = self.format_perfdata(check)
@@ -58,7 +58,7 @@ class Output(object):
 
     # Needs refactoring, but won't remove now because it's probably API-breaking
     # pylint: disable-next=unused-argument
-    def format_perfdata(self, check: "Check", linebreak=None) -> str:
+    def format_perfdata(self, check: "Check", linebreak: typing.Any = None) -> str:
         if not check.perfdata:
             return ""
         out = " ".join(check.perfdata)

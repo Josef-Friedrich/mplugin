@@ -12,10 +12,11 @@ accept custom Result subclasses in the `result_cls` parameter.
 from __future__ import unicode_literals
 
 import collections
-import numbers
 import typing
 import warnings
-from typing import Literal, Optional
+from typing import Optional, Union
+
+from monitoringplugin.state import ServiceState
 
 if typing.TYPE_CHECKING:
     from .context import Context
@@ -129,7 +130,7 @@ class Results:
     """
 
     results: list[Result]
-    by_state: dict[Literal[0, 1, 2, 3], Result]
+    by_state: dict["ServiceState", list[Result]]
     by_name: dict[str, Result]
 
     def __init__(self, *results: Result) -> None:
@@ -176,7 +177,7 @@ class Results:
         """Number of results in this container."""
         return len(self.results)
 
-    def __getitem__(self, item):
+    def __getitem__(self, item: Union[int, str]) -> Result:
         """Access result by index or name.
 
         If *item* is an integer, the itemth element in the
@@ -186,11 +187,11 @@ class Results:
         :returns: :class:`Result` object
         :raises KeyError: if no matching result is found
         """
-        if isinstance(item, numbers.Number):
+        if isinstance(item, int):
             return self.results[item]
         return self.by_name[item]
 
-    def __contains__(self, name):
+    def __contains__(self, name: str) -> bool:
         """Tests if a result with given name is present.
 
         :returns: boolean
@@ -198,7 +199,7 @@ class Results:
         return name in self.by_name
 
     @property
-    def most_significant_state(self):
+    def most_significant_state(self) -> "ServiceState":
         """The "worst" state found in all results.
 
         :returns: :obj:`~monitoringplugin.state.ServiceState` object
@@ -207,7 +208,7 @@ class Results:
         return max(self.by_state.keys())
 
     @property
-    def most_significant(self):
+    def most_significant(self) -> list[Result]:
         """Returns list of results with most significant state.
 
         From all results present, a subset with the "worst" state is
@@ -222,7 +223,7 @@ class Results:
             return []
 
     @property
-    def first_significant(self):
+    def first_significant(self) -> Result:
         """Selects one of the results with most significant state.
 
         :returns: :class:`Result` object
