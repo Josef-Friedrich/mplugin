@@ -14,16 +14,16 @@ access to it. Changes to the dict are not reflected in the file until
 :meth:`Cookie.commit` is called. It is recommended to use Cookie as
 context manager to get it opened and committed automatically.
 """
+
 import codecs
 import json
 import os
 
-from .compat import UserDict, TemporaryFile
+from .compat import TemporaryFile, UserDict
 from .platform import flock_exclusive
 
 
 class Cookie(UserDict, object):
-
     def __init__(self, statefile=None):
         """Creates a persistent dict to keep state.
 
@@ -85,20 +85,20 @@ class Cookie(UserDict, object):
 
     def _create_fobj(self):
         if not self.path:
-            return TemporaryFile('w+', encoding='ascii',
-                                 prefix='oblivious_cookie_')
+            return TemporaryFile("w+", encoding="ascii", prefix="oblivious_cookie_")
         # mode='a+' has problems with mixed R/W operation on Mac OS X
         try:
-            return codecs.open(self.path, 'r+', encoding='ascii')
+            return codecs.open(self.path, "r+", encoding="ascii")
         except IOError:
-            return codecs.open(self.path, 'w+', encoding='ascii')
+            return codecs.open(self.path, "w+", encoding="ascii")
 
     def _load(self):
         self.fobj.seek(0)
         data = json.load(self.fobj)
         if not isinstance(data, dict):
-            raise ValueError('format error: cookie does not contain dict',
-                             self.path, data)
+            raise ValueError(
+                "format error: cookie does not contain dict", self.path, data
+            )
         return data
 
     def close(self):
@@ -121,10 +121,10 @@ class Cookie(UserDict, object):
         content is saved in a durable way.
         """
         if not self.fobj:
-            raise IOError('cannot commit closed cookie', self.path)
+            raise IOError("cannot commit closed cookie", self.path)
         self.fobj.seek(0)
         self.fobj.truncate()
         json.dump(self.data, self.fobj)
-        self.fobj.write('\n')
+        self.fobj.write("\n")
         self.fobj.flush()
         os.fsync(self.fobj)

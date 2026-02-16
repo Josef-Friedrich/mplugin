@@ -19,23 +19,25 @@ import re
 
 def zap_none(val):
     if val is None:
-        return ''
+        return ""
     return val
 
 
 def quote(label):
-    if re.match(r'^\w+$', label):
+    if re.match(r"^\w+$", label):
         return label
     return "'%s'" % label
 
 
-class Performance(collections.namedtuple('Performance', [
-        'label', 'value', 'uom', 'warn', 'crit', 'min', 'max'])):
-
+class Performance(
+    collections.namedtuple(
+        "Performance", ["label", "value", "uom", "warn", "crit", "min", "max"]
+    )
+):
     # Changing these now would be API-breaking, so we'll ignore these
     # shadowed built-ins and the long list of arguments
     # pylint: disable-next=redefined-builtin,too-many-arguments
-    def __new__(cls, label, value, uom='', warn='', crit='', min='', max=''):
+    def __new__(cls, label, value, uom="", warn="", crit="", min="", max=""):
         """Create new performance data object.
 
         :param label: short identifier, results in graph
@@ -48,18 +50,29 @@ class Performance(collections.namedtuple('Performance', [
         :param max: known value maximum (None for no maximum)
         """
         if "'" in label or "=" in label:
-            raise RuntimeError('label contains illegal characters', label)
+            raise RuntimeError("label contains illegal characters", label)
         return super(Performance, cls).__new__(
-            cls, label, value, zap_none(uom), zap_none(warn), zap_none(crit),
-            zap_none(min), zap_none(max))
+            cls,
+            label,
+            value,
+            zap_none(uom),
+            zap_none(warn),
+            zap_none(crit),
+            zap_none(min),
+            zap_none(max),
+        )
 
     def __str__(self):
         """String representation conforming to the plugin API.
 
         Labels containing spaces or special characters will be quoted.
         """
-        out = ['%s=%s%s' % (quote(self.label), self.value, self.uom),
-               str(self.warn), str(self.crit), str(self.min), str(self.max)]
-        out = reversed(list(
-            itertools.dropwhile(lambda x: x == '', reversed(out))))
-        return ';'.join(out)
+        out = [
+            "%s=%s%s" % (quote(self.label), self.value, self.uom),
+            str(self.warn),
+            str(self.crit),
+            str(self.min),
+            str(self.max),
+        ]
+        out = reversed(list(itertools.dropwhile(lambda x: x == "", reversed(out))))
+        return ";".join(out)

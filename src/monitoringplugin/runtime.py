@@ -5,17 +5,18 @@ This module contains the :class:`Runtime` class that handles exceptions,
 timeouts and logging. Plugin authors should not use Runtime directly,
 but decorate the plugin's main function with :func:`~.runtime.guarded`.
 """
-from __future__ import unicode_literals, print_function
 
+from __future__ import print_function, unicode_literals
+
+import functools
 import io
 import logging
 import numbers
 import sys
-import functools
 import traceback
 
-from .output import Output
 from .error import Timeout
+from .output import Output
 from .platform import with_timeout
 
 
@@ -35,6 +36,7 @@ def guarded(original_function=None, verbose=None):
         :meth:`~nagiosplugin.Check.main` has been called). For example,
         use `@guarded(verbose=0)` to turn tracebacks in that phase off.
     """
+
     def _decorate(func):
         @functools.wraps(func)
         # This inconsistent-return-statements error can be fixed by adding a
@@ -49,21 +51,24 @@ def guarded(original_function=None, verbose=None):
                 return func(*args, **kwds)
             except Timeout as exc:
                 runtime._handle_exception(
-                    'Timeout: check execution aborted after {0}'.format(
-                        exc))
+                    "Timeout: check execution aborted after {0}".format(exc)
+                )
             except Exception:
                 runtime._handle_exception()
+
         return wrapper
+
     if original_function is not None:
         assert callable(original_function), (
-            'Function {!r} not callable. Forgot to add "verbose=" keyword?'.
-            format(original_function))
+            'Function {!r} not callable. Forgot to add "verbose=" keyword?'.format(
+                original_function
+            )
+        )
         return _decorate(original_function)
     return _decorate
 
 
 class Runtime(object):
-
     instance = None
     check = None
     _verbose = 1
@@ -79,24 +84,25 @@ class Runtime(object):
         return cls.instance
 
     def __init__(self):
-        rootlogger = logging.getLogger(__name__.split('.', 1)[0])
+        rootlogger = logging.getLogger(__name__.split(".", 1)[0])
         rootlogger.setLevel(logging.DEBUG)
         if not self.logchan:
             self.logchan = logging.StreamHandler(io.StringIO())
-            self.logchan.setFormatter(logging.Formatter('%(message)s'))
+            self.logchan.setFormatter(logging.Formatter("%(message)s"))
             rootlogger.addHandler(self.logchan)
         if not self.output:
             self.output = Output(self.logchan)
 
     def _handle_exception(self, statusline=None):
         exc_type, value = sys.exc_info()[0:2]
-        name = self.check.name.upper() + ' ' if self.check else ''
-        self.output.status = '{0}UNKNOWN: {1}'.format(
-            name, statusline or traceback.format_exception_only(
-                exc_type, value)[0].strip())
+        name = self.check.name.upper() + " " if self.check else ""
+        self.output.status = "{0}UNKNOWN: {1}".format(
+            name,
+            statusline or traceback.format_exception_only(exc_type, value)[0].strip(),
+        )
         if self.verbose > 0:
             self.output.add_longoutput(traceback.format_exc())
-        print('{0}'.format(self.output), end='', file=self.stdout)
+        print("{0}".format(self.output), end="", file=self.stdout)
         self.exitcode = 3
         self.sysexit()
 
@@ -134,7 +140,7 @@ class Runtime(object):
             with_timeout(self.timeout, self.run, check)
         else:
             self.run(check)
-        print('{0}'.format(self.output), end='', file=self.stdout)
+        print("{0}".format(self.output), end="", file=self.stdout)
         self.sysexit()
 
     def sysexit(self):

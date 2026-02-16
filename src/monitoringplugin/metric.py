@@ -7,12 +7,15 @@ Typically, :class:`~.resource.Resource` objects emit a list of metrics
 as result of their :meth:`~.resource.Resource.probe` methods.
 """
 
-import numbers
 import collections
+import numbers
 
 
-class Metric(collections.namedtuple(
-        'Metric', 'name value uom min max context contextobj resource')):
+class Metric(
+    collections.namedtuple(
+        "Metric", "name value uom min max context contextobj resource"
+    )
+):
     """Single measured value.
 
     The value should be expressed in terms of base units, so
@@ -22,8 +25,17 @@ class Metric(collections.namedtuple(
     # Changing these now would be API-breaking, so we'll ignore these
     # shadowed built-ins
     # pylint: disable-next=redefined-builtin
-    def __new__(cls, name, value, uom=None, min=None, max=None, context=None,
-                contextobj=None, resource=None):
+    def __new__(
+        cls,
+        name,
+        value,
+        uom=None,
+        min=None,
+        max=None,
+        context=None,
+        contextobj=None,
+        resource=None,
+    ):
         """Creates new Metric instance.
 
         :param name: short internal identifier for the value -- appears
@@ -42,8 +54,9 @@ class Metric(collections.namedtuple(
             :class:`~nagiosplugin.resource.Resource` (set automatically
             by :class:`~nagiosplugin.check.Check`)
         """
-        return tuple. __new__(cls, (
-            name, value, uom, min, max, context or name, contextobj, resource))
+        return tuple.__new__(
+            cls, (name, value, uom, min, max, context or name, contextobj, resource)
+        )
 
     def __str__(self):
         """Same as :attr:`valueunit`."""
@@ -74,14 +87,15 @@ class Metric(collections.namedtuple(
         number, express the value with a limited number of digits to
         improve readability.
         """
-        return '%s%s' % (self._human_readable_value, self.uom or '')
+        return "%s%s" % (self._human_readable_value, self.uom or "")
 
     @property
     def _human_readable_value(self):
         """Limit number of digits for floats."""
-        if (isinstance(self.value, numbers.Real) and
-                not isinstance(self.value, numbers.Integral)):
-            return '%.4g' % self.value
+        if isinstance(self.value, numbers.Real) and not isinstance(
+            self.value, numbers.Integral
+        ):
+            return "%.4g" % self.value
         return str(self.value)
 
     def evaluate(self):
@@ -91,7 +105,7 @@ class Metric(collections.namedtuple(
         :raise RuntimeError: if no context has been associated yet
         """
         if not self.contextobj:
-            raise RuntimeError('no context set for metric', self.name)
+            raise RuntimeError("no context set for metric", self.name)
         return self.contextobj.evaluate(self, self.resource)
 
     def performance(self):
@@ -101,5 +115,5 @@ class Metric(collections.namedtuple(
         :raise RuntimeError: if no context has been associated yet
         """
         if not self.contextobj:
-            raise RuntimeError('no context set for metric', self.name)
+            raise RuntimeError("no context set for metric", self.name)
         return self.contextobj.performance(self, self.resource)

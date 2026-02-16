@@ -7,7 +7,7 @@ import subprocess
 
 import nagiosplugin
 
-_log = logging.getLogger('nagiosplugin')
+_log = logging.getLogger("nagiosplugin")
 
 
 class Users(nagiosplugin.Resource):
@@ -17,7 +17,7 @@ class Users(nagiosplugin.Resource):
     check. It determines the logged in users and counts them.
     """
 
-    who_cmd = 'who'
+    who_cmd = "who"
 
     def __init__(self):
         self.users = []
@@ -36,16 +36,16 @@ class Users(nagiosplugin.Resource):
         try:
             # subprocess context manager not implemented yet in py27
             # pylint: disable-next=consider-using-with
-            process = subprocess.Popen([self.who_cmd],
-                                       stdout=subprocess.PIPE,
-                                       stdin=subprocess.PIPE)
+            process = subprocess.Popen(
+                [self.who_cmd], stdout=subprocess.PIPE, stdin=subprocess.PIPE
+            )
             for line in process.communicate()[0].splitlines():
-                _log.debug('who output: %s', line.strip())
+                _log.debug("who output: %s", line.strip())
                 users.append(line.split()[0].decode())
         except OSError:
             raise nagiosplugin.CheckError(
-                'cannot determine number of users ({0} failed)'.format(
-                    self.who_cmd))
+                "cannot determine number of users ({0} failed)".format(self.who_cmd)
+            )
         return users
 
     def probe(self):
@@ -58,8 +58,10 @@ class Users(nagiosplugin.Resource):
         """
         self.users = self.list_users()
         self.unique_users = set(self.users)
-        return [nagiosplugin.Metric('total', len(self.users), min=0),
-                nagiosplugin.Metric('unique', len(self.unique_users), min=0)]
+        return [
+            nagiosplugin.Metric("total", len(self.users), min=0),
+            nagiosplugin.Metric("unique", len(self.unique_users), min=0),
+        ]
 
 
 class UsersSummary(nagiosplugin.Summary):
@@ -74,37 +76,64 @@ class UsersSummary(nagiosplugin.Summary):
     """
 
     def verbose(self, results):
-        if 'total' in results:
-            return 'users: ' + ', '.join(results['total'].resource.users)
+        if "total" in results:
+            return "users: " + ", ".join(results["total"].resource.users)
         return None
 
 
 @nagiosplugin.guarded
 def main():
     argp = argparse.ArgumentParser()
-    argp.add_argument('-w', '--warning', metavar='RANGE',
-                      help='warning if total user count is outside RANGE')
-    argp.add_argument('-c', '--critical', metavar='RANGE',
-                      help='critical is total user count is outside RANGE')
-    argp.add_argument('-W', '--warning-unique', metavar='RANGE',
-                      help='warning if unique user count is outside RANGE')
-    argp.add_argument('-C', '--critical-unique', metavar='RANGE',
-                      help='critical if unique user count is outside RANGE')
-    argp.add_argument('-v', '--verbose', action='count', default=0,
-                      help='increase output verbosity (use up to 3 times)')
-    argp.add_argument('-t', '--timeout', default=10,
-                      help='abort execution after TIMEOUT seconds')
+    argp.add_argument(
+        "-w",
+        "--warning",
+        metavar="RANGE",
+        help="warning if total user count is outside RANGE",
+    )
+    argp.add_argument(
+        "-c",
+        "--critical",
+        metavar="RANGE",
+        help="critical is total user count is outside RANGE",
+    )
+    argp.add_argument(
+        "-W",
+        "--warning-unique",
+        metavar="RANGE",
+        help="warning if unique user count is outside RANGE",
+    )
+    argp.add_argument(
+        "-C",
+        "--critical-unique",
+        metavar="RANGE",
+        help="critical if unique user count is outside RANGE",
+    )
+    argp.add_argument(
+        "-v",
+        "--verbose",
+        action="count",
+        default=0,
+        help="increase output verbosity (use up to 3 times)",
+    )
+    argp.add_argument(
+        "-t", "--timeout", default=10, help="abort execution after TIMEOUT seconds"
+    )
     args = argp.parse_args()
     check = nagiosplugin.Check(
         Users(),
-        nagiosplugin.ScalarContext('total', args.warning, args.critical,
-                                   fmt_metric='{value} users logged in'),
         nagiosplugin.ScalarContext(
-            'unique', args.warning_unique, args.critical_unique,
-            fmt_metric='{value} unique users logged in'),
-        UsersSummary())
+            "total", args.warning, args.critical, fmt_metric="{value} users logged in"
+        ),
+        nagiosplugin.ScalarContext(
+            "unique",
+            args.warning_unique,
+            args.critical_unique,
+            fmt_metric="{value} unique users logged in",
+        ),
+        UsersSummary(),
+    )
     check.main(args.verbose, args.timeout)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

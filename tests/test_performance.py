@@ -1,24 +1,19 @@
-# -*- coding: utf-8 -*-
-from nagiosplugin.performance import Performance
+import pytest
 
-try:
-    import unittest2 as unittest
-except ImportError:  # pragma: no cover
-    import unittest
+from monitoringplugin.performance import Performance
 
 
-class PerformanceTest(unittest.TestCase):
-
+class TestPerformance:
     def test_normal_label(self):
-        self.assertEqual('d=10', str(Performance('d', 10)))
+        assert "d=10" == str(Performance("d", 10))
 
     def test_label_quoted(self):
-        self.assertEqual("'d d'=10", str(Performance('d d', 10)))
+        assert "'d d'=10" == str(Performance("d d", 10))
 
     def test_label_must_not_contain_quotes(self):
-        with self.assertRaises(RuntimeError):
+        with pytest.raises(RuntimeError):
             str(Performance("d'", 10))
 
     def test_label_must_not_contain_equals(self):
-        with self.assertRaises(RuntimeError):
+        with pytest.raises(RuntimeError):
             str(Performance("d=", 10))

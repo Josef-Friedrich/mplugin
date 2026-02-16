@@ -15,6 +15,7 @@ implementation that gets the output to the point.
 """
 
 from __future__ import unicode_literals
+
 from .state import Ok
 
 
@@ -41,7 +42,7 @@ class Summary(object):
         :param results: :class:`~nagiosplugin.result.Results` container
         :returns: status line
         """
-        return '{0}'.format(results[0])
+        return "{0}".format(results[0])
 
     # It might be possible to re-implement this as a @staticmethod,
     # but this might be an API-breaking change, so it should probably stay in
@@ -59,7 +60,7 @@ class Summary(object):
         :param results: :class:`~.result.Results` container
         :returns: status line
         """
-        return '{0}'.format(results.first_significant)
+        return "{0}".format(results.first_significant)
 
     # It might be possible to re-implement this as a @staticmethod,
     # but this might be an API-breaking change, so it should probably stay in
@@ -80,7 +81,7 @@ class Summary(object):
         for result in results:
             if result.state == Ok:
                 continue
-            msgs.append('{0}: {1}'.format(result.state, result))
+            msgs.append("{0}: {1}".format(result.state, result))
         return msgs
 
     # It might be possible to re-implement this as a @staticmethod,
@@ -94,4 +95,4 @@ class Summary(object):
 
         :returns: status line
         """
-        return 'no check results'
+        return "no check results"

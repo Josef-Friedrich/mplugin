@@ -16,11 +16,10 @@ evaluation or performance data logic.
 from .performance import Performance
 from .range import Range
 from .result import Result
-from .state import Ok, Warn, Critical
+from .state import Critical, Ok, Warn
 
 
 class Context(object):
-
     def __init__(self, name, fmt_metric=None, result_cls=Result):
         """Creates generic context identified by `name`.
 
@@ -97,14 +96,24 @@ class Context(object):
             return self.fmt_metric(metric, self)
         except TypeError:
             return self.fmt_metric.format(
-                name=metric.name, value=metric.value, uom=metric.uom,
-                valueunit=metric.valueunit, min=metric.min, max=metric.max)
+                name=metric.name,
+                value=metric.value,
+                uom=metric.uom,
+                valueunit=metric.valueunit,
+                min=metric.min,
+                max=metric.max,
+            )
 
 
 class ScalarContext(Context):
-
-    def __init__(self, name, warning=None, critical=None,
-                 fmt_metric='{name} is {valueunit}', result_cls=Result):
+    def __init__(
+        self,
+        name,
+        warning=None,
+        critical=None,
+        fmt_metric="{name} is {valueunit}",
+        result_cls=Result,
+    ):
         """Ready-to-use :class:`Context` subclass for scalar values.
 
         ScalarContext models the common case where a single scalar is to
@@ -153,9 +162,15 @@ class ScalarContext(Context):
         :param resource: not used
         :returns: :class:`~nagiosplugin.performance.Performance` object
         """
-        return Performance(metric.name, metric.value, metric.uom,
-                           self.warning, self.critical,
-                           metric.min, metric.max)
+        return Performance(
+            metric.name,
+            metric.value,
+            metric.uom,
+            self.warning,
+            self.critical,
+            metric.min,
+            metric.max,
+        )
 
 
 class Contexts:
@@ -163,8 +178,8 @@ class Contexts:
 
     def __init__(self):
         self.by_name = dict(
-            default=ScalarContext('default', '', ''),
-            null=Context('null'))
+            default=ScalarContext("default", "", ""), null=Context("null")
+        )
 
     def add(self, context):
         self.by_name[context.name] = context
@@ -173,9 +188,11 @@ class Contexts:
         try:
             return self.by_name[context_name]
         except KeyError:
-            raise KeyError('cannot find context', context_name,
-                           'known contexts: {0}'.format(
-                               ', '.join(self.by_name.keys())))
+            raise KeyError(
+                "cannot find context",
+                context_name,
+                "known contexts: {0}".format(", ".join(self.by_name.keys())),
+            )
 
     def __contains__(self, context_name):
         return context_name in self.by_name

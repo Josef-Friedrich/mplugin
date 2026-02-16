@@ -11,6 +11,7 @@ returned metrics to results and performance data. A typical usage
 pattern would be to populate a check with domain objects and then
 delegate control to it.
 """
+
 import logging
 
 from .context import Context, Contexts
@@ -19,15 +20,13 @@ from .metric import Metric
 from .resource import Resource
 from .result import Result, Results
 from .runtime import Runtime
-from .state import Ok, Unknown, ServiceState
+from .state import Ok, ServiceState, Unknown
 from .summary import Summary
-
 
 _log = logging.getLogger(__name__)
 
 
 class Check(object):
-
     def __init__(self, *objects, **kwargs):
         """Creates and configures a check.
 
@@ -42,10 +41,10 @@ class Check(object):
         self.summary = Summary()
         self.results = Results()
         self.perfdata = []
-        if 'name' in kwargs and kwargs['name'] != '':
-            self.name = kwargs['name']
+        if "name" in kwargs and kwargs["name"] != "":
+            self.name = kwargs["name"]
         else:
-            self.name = ''
+            self.name = ""
         self.add(*objects)
 
     def add(self, *objects):
@@ -61,8 +60,8 @@ class Check(object):
             if isinstance(obj, Resource):
                 self.resources.append(obj)
                 if self.name is None:
-                    self.name = ''
-                elif self.name == '':
+                    self.name = ""
+                elif self.name == "":
                     self.name = self.resources[0].name
             elif isinstance(obj, Context):
                 self.contexts.add(obj)
@@ -71,8 +70,7 @@ class Check(object):
             elif isinstance(obj, Results):
                 self.results = obj
             else:
-                raise TypeError('cannot add type {0} to check'.format(
-                    type(obj)), obj)
+                raise TypeError("cannot add type {0} to check".format(type(obj)), obj)
         return self
 
     def _evaluate_resource(self, resource):
@@ -80,8 +78,7 @@ class Check(object):
             metric = None
             metrics = resource.probe()
             if not metrics:
-                _log.warning('resource %s did not produce any metric',
-                             resource.name)
+                _log.warning("resource %s did not produce any metric", resource.name)
             if isinstance(metrics, Metric):
                 # resource returned a bare metric instead of list/generator
                 metrics = [metrics]
@@ -95,9 +92,11 @@ class Check(object):
                     self.results.add(Result(result, metric=metric))
                 else:
                     raise ValueError(
-                        'evaluate() returned neither Result nor ServiceState '
-                        'object', metric.name, result)
-                self.perfdata.append(str(metric.performance() or ''))
+                        "evaluate() returned neither Result nor ServiceState object",
+                        metric.name,
+                        result,
+                    )
+                self.perfdata.append(str(metric.performance() or ""))
         except CheckError as e:
             self.results.add(Result(Unknown, str(e), metric))
 
@@ -151,12 +150,12 @@ class Check(object):
         :class:`Summary` object. Read-only property.
         """
         if not self.results:
-            return self.summary.empty() or ''
+            return self.summary.empty() or ""
 
         if self.state == Ok:
-            return self.summary.ok(self.results) or ''
+            return self.summary.ok(self.results) or ""
 
-        return self.summary.problem(self.results) or ''
+        return self.summary.problem(self.results) or ""
 
     @property
     def verbose_str(self):
@@ -165,7 +164,7 @@ class Check(object):
         Long text output if check runs in verbose mode. Also queried
         from :class:`~nagiosplugin.summary.Summary`. Read-only property.
         """
-        return self.summary.verbose(self.results) or ''
+        return self.summary.verbose(self.results) or ""
 
     @property
     def exitcode(self):

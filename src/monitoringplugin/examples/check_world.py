@@ -6,9 +6,8 @@ import nagiosplugin
 
 
 class World(nagiosplugin.Resource):
-
     def probe(self):
-        return [nagiosplugin.Metric('world', True, context='null')]
+        return [nagiosplugin.Metric("world", True, context="null")]
 
 
 def main():
@@ -16,5 +15,5 @@ def main():
     check.main()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

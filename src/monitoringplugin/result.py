@@ -11,12 +11,13 @@ accept custom Result subclasses in the `result_cls` parameter.
 """
 
 from __future__ import unicode_literals
+
 import collections
 import numbers
 import warnings
 
 
-class Result(collections.namedtuple('Result', 'state hint metric')):
+class Result(collections.namedtuple("Result", "state hint metric")):
     """Evaluation outcome consisting of state and explanation.
 
     A Result object is typically emitted by a
@@ -54,12 +55,12 @@ class Result(collections.namedtuple('Result', 'state hint metric')):
             desc = None
 
         if self.hint and desc:
-            return '{0} ({1})'.format(desc, self.hint)
+            return "{0} ({1})".format(desc, self.hint)
         if self.hint:
             return self.hint
         if desc:
             return desc
-        return ''
+        return ""
 
     @property
     def resource(self):
@@ -83,8 +84,9 @@ class ScalarResult(Result):  # pragma: no cover
     """
 
     def __new__(cls, state, hint, metric):
-        warnings.warn('ScalarResult is deprecated, use Result instead!',
-                      DeprecationWarning)
+        warnings.warn(
+            "ScalarResult is deprecated, use Result instead!", DeprecationWarning
+        )
         return tuple.__new__(cls, (state, hint, metric))
 
 
@@ -118,7 +120,8 @@ class Results:
         for result in results:
             if not isinstance(result, Result):
                 raise ValueError(
-                    'trying to add non-Result to Results container', result)
+                    "trying to add non-Result to Results container", result
+                )
             self.results.append(result)
             self.by_state[result.state].append(result)
             try:

@@ -2,7 +2,7 @@
 import collections
 
 
-class Range(collections.namedtuple('Range', 'invert start end')):
+class Range(collections.namedtuple("Range", "invert start end")):
     """Represents a threshold range.
 
     The general format is "[@][start:][end]". "start:" may be omitted if
@@ -15,17 +15,16 @@ class Range(collections.namedtuple('Range', 'invert start end')):
     for details.
     """
 
-    def __new__(cls, spec=''):
+    def __new__(cls, spec=""):
         """Creates a Range object according to `spec`.
 
         :param spec: may be either a string, an int, or another
             Range object.
         """
-        spec = spec or ''
+        spec = spec or ""
         if isinstance(spec, Range):
-            return super(Range, cls).__new__(
-                cls, spec.invert, spec.start, spec.end)
-        if (isinstance(spec, int) or isinstance(spec, float)):
+            return super(Range, cls).__new__(cls, spec.invert, spec.start, spec.end)
+        if isinstance(spec, int) or isinstance(spec, float):
             start, end, invert = 0, spec, False
         start, end, invert = cls._parse(str(spec))
         cls._verify(start, end)
@@ -34,25 +33,25 @@ class Range(collections.namedtuple('Range', 'invert start end')):
     @classmethod
     def _parse(cls, spec):
         invert = False
-        if spec.startswith('@'):
+        if spec.startswith("@"):
             invert = True
             spec = spec[1:]
-        if ':' in spec:
-            start, end = spec.split(':')
+        if ":" in spec:
+            start, end = spec.split(":")
         else:
-            start, end = '', spec
-        if start == '~':
-            start = float('-inf')
+            start, end = "", spec
+        if start == "~":
+            start = float("-inf")
         else:
             start = cls._parse_atom(start, 0)
-        end = cls._parse_atom(end, float('inf'))
+        end = cls._parse_atom(end, float("inf"))
         return start, end, invert
 
     @staticmethod
     def _parse_atom(atom, default):
-        if atom == '':
+        if atom == "":
             return default
-        if '.' in atom:
+        if "." in atom:
             return float(atom)
         return int(atom)
 
@@ -60,8 +59,7 @@ class Range(collections.namedtuple('Range', 'invert start end')):
     def _verify(start, end):
         """Throws ValueError if the range is not consistent."""
         if start > end:
-            raise ValueError('start %s must not be greater than end %s' % (
-                             start, end))
+            raise ValueError("start %s must not be greater than end %s" % (start, end))
 
     def match(self, value):
         """Decides if `value` is inside/outside the threshold.
@@ -83,14 +81,14 @@ class Range(collections.namedtuple('Range', 'invert start end')):
     def _format(self, omit_zero_start=True):
         result = []
         if self.invert:
-            result.append('@')
-        if self.start == float('-inf'):
-            result.append('~:')
+            result.append("@")
+        if self.start == float("-inf"):
+            result.append("~:")
         elif not omit_zero_start or self.start != 0:
-            result.append(('%s:' % self.start))
-        if self.end != float('inf'):
-            result.append(('%s' % self.end))
-        return ''.join(result)
+            result.append(("%s:" % self.start))
+        if self.end != float("inf"):
+            result.append(("%s" % self.end))
+        return "".join(result)
 
     def __str__(self):
         """Human-readable range specification."""
@@ -98,9 +96,9 @@ class Range(collections.namedtuple('Range', 'invert start end')):
 
     def __repr__(self):
         """Parseable range specification."""
-        return 'Range(%r)' % str(self)
+        return "Range(%r)" % str(self)
 
     @property
     def violation(self):
         """Human-readable description why a value does not match."""
-        return 'outside range {0}'.format(self._format(False))
+        return "outside range {0}".format(self._format(False))

@@ -13,7 +13,6 @@ import os
 
 
 class LogTail(object):
-
     def __init__(self, path, cookie):
         """Creates new LogTail context.
 
@@ -28,9 +27,10 @@ class LogTail(object):
 
     def _seek_if_applicable(self, fileinfo):
         self.stat = os.stat(self.path)
-        if (self.stat.st_ino == fileinfo.get('inode', -1) and
-                self.stat.st_size >= fileinfo.get('pos', 0)):
-            self.logfile.seek(fileinfo['pos'])
+        if self.stat.st_ino == fileinfo.get(
+            "inode", -1
+        ) and self.stat.st_size >= fileinfo.get("pos", 0):
+            self.logfile.seek(fileinfo["pos"])
 
     def __enter__(self):
         """Seeks to the last seen position and reads new lines.
@@ -44,7 +44,7 @@ class LogTail(object):
 
         :yields: new lines as bytes strings
         """
-        self.logfile = open(self.path, 'rb')
+        self.logfile = open(self.path, "rb")
         self.cookie.open()
         self._seek_if_applicable(self.cookie.get(self.path, {}))
         line = self.logfile.readline()
@@ -55,7 +55,8 @@ class LogTail(object):
     def __exit__(self, exc_type, exc_val, exc_tb):
         if not exc_type:
             self.cookie[self.path] = dict(
-                inode=self.stat.st_ino, pos=self.logfile.tell())
+                inode=self.stat.st_ino, pos=self.logfile.tell()
+            )
             self.cookie.commit()
         self.cookie.close()
         self.logfile.close()

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 class MultiArg(object):
-
-    def __init__(self, args, fill=None, splitchar=','):
+    def __init__(self, args, fill=None, splitchar=","):
         if isinstance(args, list):
             self.args = args
         else:

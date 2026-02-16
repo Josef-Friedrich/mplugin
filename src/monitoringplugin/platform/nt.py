@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 """NT implementation of platform-specific services."""
 
-import threading
 # This only loads on Windows
 # pylint: disable-next=import-error
 import msvcrt
+import threading
 
 import nagiosplugin
+
 
 # Changing the badly-named `t` variable at this point is likely API-breaking,
 # so it will be left in place.
@@ -22,7 +23,7 @@ def with_timeout(t, func, *args, **kwargs):
     func_thread.start()
     func_thread.join(t)
     if func_thread.is_alive():
-        raise nagiosplugin.Timeout('{0}s'.format(t))
+        raise nagiosplugin.Timeout("{0}s".format(t))
 
 
 def flock_exclusive(fileobj):
