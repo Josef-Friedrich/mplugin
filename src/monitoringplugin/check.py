@@ -26,7 +26,14 @@ _log = logging.getLogger(__name__)
 
 
 class Check(object):
-    def __init__(self, *objects, **kwargs):
+    resources: list[Resource]
+    contexts: Contexts
+    summary: Summary
+    results: Results
+    perfdata: list[str]
+    name: str
+
+    def __init__(self, *objects: Resource | Context | Summary | Results, **kwargs):
         """Creates and configures a check.
 
         Specialized *objects* representing resources, contexts,
@@ -46,7 +53,7 @@ class Check(object):
             self.name = ""
         self.add(*objects)
 
-    def add(self, *objects):
+    def add(self, *objects: Resource | Context | Summary | Results):
         """Adds domain objects to a check.
 
         :param objects: one or more objects that are descendants from

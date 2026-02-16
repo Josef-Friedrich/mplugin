@@ -9,10 +9,20 @@ instances may share the same cookie.
 """
 
 import os
+import typing
+from io import BufferedIOBase
+
+if typing.TYPE_CHECKING:
+    from .cookie import Cookie
 
 
 class LogTail(object):
-    def __init__(self, path, cookie):
+    path: str
+    cookie: "Cookie"
+    logfile: typing.Optional[BufferedIOBase] = None
+    stat: typing.Optional[os.stat_result]
+
+    def __init__(self, path: str, cookie: "Cookie") -> None:
         """Creates new LogTail context.
 
         :param path: path to the log file that is to be observed
