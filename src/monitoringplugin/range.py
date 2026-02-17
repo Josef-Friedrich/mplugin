@@ -42,18 +42,22 @@ class Range:
     @classmethod
     def _parse(cls, spec: str) -> tuple[float, float, bool]:
         invert = False
+        start: float
+        start_str: str
+        end: float
+        end_str: str
         if spec.startswith("@"):
             invert = True
             spec = spec[1:]
         if ":" in spec:
-            start, end = spec.split(":")
+            start_str, end_str = spec.split(":")
         else:
-            start, end = "", spec
-        if start == "~":
+            start_str, end_str = "", spec
+        if start_str == "~":
             start = float("-inf")
         else:
-            start = cls._parse_atom(start, 0)
-        end = cls._parse_atom(end, float("inf"))
+            start = cls._parse_atom(start_str, 0)
+        end = cls._parse_atom(end_str, float("inf"))
         return start, end, invert
 
     @staticmethod

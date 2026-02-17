@@ -8,7 +8,7 @@ as result of their :meth:`~.resource.Resource.probe` methods.
 
 import numbers
 import typing
-from typing import Any, NamedTuple, Optional, Self, TypedDict, Unpack
+from typing import Any, Optional, Self, TypedDict, Unpack
 
 from monitoringplugin.performance import Performance
 
@@ -30,32 +30,27 @@ class MetricKwargs(TypedDict, total=False):
     resource: "Resource"
 
 
-class Metric(
-    NamedTuple(
-        "Metric",
-        [
-            ("name", str),
-            ("value", Any),
-            ("uom", str),
-            ("min", float),
-            ("max", float),
-            ("context", str),
-            ("contextobj", "Context"),
-            ("resource", "Resource"),
-        ],
-    )
-):
+class Metric:
     """Single measured value.
 
     The value should be expressed in terms of base units, so
     Metric('swap', 10240, 'B') is better than Metric('swap', 10, 'kiB').
     """
 
+    name: str
+    value: Any
+    uom: Optional[str] = None
+    min: Optional[float] = None
+    max: Optional[float] = None
+    context: Optional[str] = None
+    contextobj: Optional["Context"] = None
+    resource: Optional["Resource"] = None
+
     # Changing these now would be API-breaking, so we'll ignore these
     # shadowed built-ins
     # pylint: disable-next=redefined-builtin
-    def __new__(
-        cls,
+    def __init__(
+        self,
         name: str,
         value: Any,
         uom: Optional[str] = None,
@@ -64,7 +59,7 @@ class Metric(
         context: Optional[str] = None,
         contextobj: Optional["Context"] = None,
         resource: Optional["Resource"] = None,
-    ) -> Self:
+    ) -> None:
         """Creates new Metric instance.
 
         :param name: short internal identifier for the value -- appears
@@ -83,9 +78,17 @@ class Metric(
             :class:`~monitoringplugin.resource.Resource` (set automatically
             by :class:`~monitoringplugin.check.Check`)
         """
-        return tuple.__new__(
-            cls, (name, value, uom, min, max, context or name, contextobj, resource)
-        )
+        self.name = name
+        self.value = value
+        self.uom = uom
+        self.min = min
+        self.max = max
+        if context is not None:
+            self.context = context
+        else:
+            self.context = name
+        self.contextobj = contextobj
+        self.resource = resource
 
     def __str__(self):
         """Same as :attr:`valueunit`."""
@@ -93,7 +96,9 @@ class Metric(
 
     def replace(self, **attr: Unpack[MetricKwargs]) -> Self:
         """Creates new instance with updated attributes."""
-        return self._replace(**attr)
+        for key, value in attr.items():
+            setattr(self, key, value)
+        return self
 
     @property
     def description(self):
@@ -135,6 +140,8 @@ class Metric(
         """
         if not self.contextobj:
             raise RuntimeError("no context set for metric", self.name)
+        if not self.resource:
+            raise RuntimeError("no resource set for metric", self.name)
         return self.contextobj.evaluate(self, self.resource)
 
     def performance(self) -> Optional[Performance]:
@@ -145,4 +152,6 @@ class Metric(
         """
         if not self.contextobj:
             raise RuntimeError("no context set for metric", self.name)
+        if not self.resource:
+            raise RuntimeError("no resource set for metric", self.name)
         return self.contextobj.performance(self, self.resource)
