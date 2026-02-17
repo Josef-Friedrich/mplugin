@@ -20,7 +20,7 @@ from .metric import Metric
 from .resource import Resource
 from .result import Result, Results
 from .runtime import Runtime
-from .state import Ok, ServiceState, Unknown
+from .state import ServiceState, ok, unknown
 from .summary import Summary
 
 _log = logging.getLogger(__name__)
@@ -105,7 +105,7 @@ class Check(object):
                     )
                 self.perfdata.append(str(metric.performance() or ""))
         except CheckError as e:
-            self.results.add(Result(Unknown, str(e), metric))
+            self.results.add(Result(unknown, str(e), metric))
 
     def __call__(self):
         """Actually run the check.
@@ -146,7 +146,7 @@ class Check(object):
         try:
             return self.results.most_significant_state
         except ValueError:
-            return Unknown
+            return unknown
 
     @property
     def summary_str(self) -> str:
@@ -159,7 +159,7 @@ class Check(object):
         if not self.results:
             return self.summary.empty() or ""
 
-        if self.state == Ok:
+        if self.state == ok:
             return self.summary.ok(self.results) or ""
 
         return self.summary.problem(self.results) or ""

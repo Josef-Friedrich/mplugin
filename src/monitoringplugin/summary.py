@@ -15,7 +15,7 @@ implementation that gets the output to the point.
 
 import typing
 
-from .state import Ok
+from .state import ok
 
 if typing.TYPE_CHECKING:
     from .result import Results
@@ -81,7 +81,7 @@ class Summary(object):
         """
         msgs: list[str] = []
         for result in results:
-            if result.state == Ok:
+            if result.state == ok:
                 continue
             msgs.append("{0}: {1}".format(result.state, result))
         return msgs

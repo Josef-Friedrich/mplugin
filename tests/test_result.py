@@ -2,63 +2,63 @@ import pytest
 
 import monitoringplugin
 from monitoringplugin.result import Result, Results
-from monitoringplugin.state import Critical, Ok, Unknown, Warn
+from monitoringplugin.state import critical, ok, unknown, warn
 
 
 class TestResult:
     def test_resorce_should_be_none_for_resourceless_metric(self):
-        assert Result(Ok).resource is None
+        assert Result(ok).resource is None
 
     def test_metric_resorce(self):
         res = object()
         m = monitoringplugin.Metric("foo", 1, resource=res)
-        assert Result(Ok, metric=m).resource == res
+        assert Result(ok, metric=m).resource == res
 
     def test_context_should_be_none_for_contextless_metric(self):
-        assert Result(Ok).context is None
+        assert Result(ok).context is None
 
     def test_metric_context(self):
         ctx = object()
         m = monitoringplugin.Metric("foo", 1, contextobj=ctx)
-        assert Result(Ok, metric=m).context == ctx
+        assert Result(ok, metric=m).context == ctx
 
     def test_str_metric_with_hint(self):
         assert "2 (unexpected)" == str(
-            Result(Warn, "unexpected", monitoringplugin.Metric("foo", 2))
+            Result(warn, "unexpected", monitoringplugin.Metric("foo", 2))
         )
 
     def test_str_metric_only(self):
-        assert "3" == str(Result(Warn, metric=monitoringplugin.Metric("foo", 3)))
+        assert "3" == str(Result(warn, metric=monitoringplugin.Metric("foo", 3)))
 
     def test_str_hint_only(self):
-        assert "how come?" == str(Result(Warn, "how come?"))
+        assert "how come?" == str(Result(warn, "how come?"))
 
     def test_str_empty(self):
-        assert "" == str(Result(Warn))
+        assert "" == str(Result(warn))
 
 
 class TestResults:
     def test_lookup_by_metric_name(self):
         r = Results()
-        result = Result(Ok, "", monitoringplugin.Metric("met1", 0))
-        r.add(result, Result(Ok, "other"))
+        result = Result(ok, "", monitoringplugin.Metric("met1", 0))
+        r.add(result, Result(ok, "other"))
         assert r["met1"] == result
 
     def test_lookup_by_index(self):
         r = Results()
-        result = Result(Ok, "", monitoringplugin.Metric("met1", 0))
-        r.add(Result(Ok, "other"), result)
+        result = Result(ok, "", monitoringplugin.Metric("met1", 0))
+        r.add(Result(ok, "other"), result)
         assert r[1] == result
 
     def test_len(self):
         r = Results()
-        r.add(Result(Ok), Result(Ok), Result(Ok))
+        r.add(Result(ok), Result(ok), Result(ok))
         assert 3 == len(r)
 
     def test_iterate_in_order_of_descending_states(self):
         r = Results()
-        r.add(Result(Warn), Result(Ok), Result(Critical), Result(Warn))
-        assert [Critical, Warn, Warn, Ok] == [result.state for result in r]
+        r.add(Result(warn), Result(ok), Result(critical), Result(warn))
+        assert [critical, warn, warn, ok] == [result.state for result in r]
 
     def test_most_significant_state_shoud_raise_valueerror_if_empty(self):
         with pytest.raises(ValueError):
@@ -66,37 +66,37 @@ class TestResults:
 
     def test_most_significant_state(self):
         r = Results()
-        r.add(Result(Ok))
-        assert Ok == r.most_significant_state
-        r.add(Result(Critical))
-        assert Critical == r.most_significant_state
-        r.add(Result(Warn))
-        assert Critical == r.most_significant_state
+        r.add(Result(ok))
+        assert ok == r.most_significant_state
+        r.add(Result(critical))
+        assert critical == r.most_significant_state
+        r.add(Result(warn))
+        assert critical == r.most_significant_state
 
     def test_most_significant_should_return_empty_set_if_empty(self):
         assert [] == Results().most_significant
 
     def test_most_signigicant(self):
         r = Results()
-        r.add(Result(Ok), Result(Warn), Result(Ok), Result(Warn))
-        assert [Warn, Warn] == [result.state for result in r.most_significant]
+        r.add(Result(ok), Result(warn), Result(ok), Result(warn))
+        assert [warn, warn] == [result.state for result in r.most_significant]
 
     def test_first_significant(self):
         r = Results()
         r.add(
-            Result(Critical), Result(Unknown, "r1"), Result(Unknown, "r2"), Result(Ok)
+            Result(critical), Result(unknown, "r1"), Result(unknown, "r2"), Result(ok)
         )
-        assert Result(Unknown, "r1") == r.first_significant
+        assert Result(unknown, "r1") == r.first_significant
 
     def test_contains(self):
         results = Results()
-        r1 = Result(Unknown, "r1", monitoringplugin.Metric("m1", 1))
+        r1 = Result(unknown, "r1", monitoringplugin.Metric("m1", 1))
         results.add(r1)
         assert "m1" in results
         assert "m2" not in results
 
     def test_add_in_init(self):
-        results = Results(Result(Unknown, "r1"), Result(Unknown, "r2"))
+        results = Results(Result(unknown, "r1"), Result(unknown, "r2"))
         assert 2 == len(results)
 
     def test_add_should_fail_unless_result_passed(self):

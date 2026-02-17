@@ -9,16 +9,18 @@ class has not been named `Warning` to avoid being confused with the
 built-in Python exception of the same name.
 """
 
+from __future__ import annotations
+
 import functools
-import typing
+from typing import Any
 
 
 def worst(states: list["ServiceState"]) -> "ServiceState":
     """Reduce list of *states* to the most significant state."""
-    return functools.reduce(lambda a, b: a if a > b else b, states, Ok)
+    return functools.reduce(lambda a, b: a if a > b else b, states, ok)
 
 
-class ServiceState(typing.NamedTuple("ServiceState", [("code", int), ("text", str)])):
+class ServiceState:
     """Abstract base class for all states.
 
     Each state has two constant attributes: :attr:`text` is the short
@@ -26,45 +28,73 @@ class ServiceState(typing.NamedTuple("ServiceState", [("code", int), ("text", st
     the summary line. :attr:`code` is the corresponding exit code.
     """
 
-    def __str__(self):
+    code: int
+
+    text: str
+
+    def __init__(self, code: int, text: str) -> None:
+        self.code = code
+        self.text = text
+
+    def __str__(self) -> str:
         """Plugin-API compliant text representation."""
         return self.text
 
-    def __int__(self):
+    def __int__(self) -> int:
         """Plugin API compliant exit code."""
         return self.code
 
+    def __gt__(self, other: Any) -> bool:
+        return (
+            hasattr(other, "code")
+            and isinstance(other.code, int)
+            and self.code > other.code
+        )
+
+    def __eq__(self, value: Any) -> bool:
+        return (
+            hasattr(value, "code")
+            and isinstance(value.code, int)
+            and self.code == value.code
+            and hasattr(value, "text")
+            and isinstance(value.text, str)
+            and self.text == value.text
+        )
+
+    def __hash__(self) -> int:
+        return hash((self.code, self.text))
+
 
 class Ok(ServiceState):
-    def __new__(cls):
-        return super(cls, Ok).__new__(cls, 0, "ok")
+    def __init__(self) -> None:
+        super().__init__(0, "ok")
 
 
-Ok = Ok()
+ok = Ok()
 
 
 class Warn(ServiceState):
-    def __new__(cls):
-        return super(cls, Warn).__new__(cls, 1, "warning")
+    def __init__(self) -> None:
+        super().__init__(1, "warning")
 
 
 # According to the Nagios development guidelines, this should be Warning,
 # not Warn, but renaming the class would occlude the built-in Warning
 # exception class.
-Warn = Warn()
+warn = Warn()
 
 
 class Critical(ServiceState):
-    def __new__(cls):
-        return super(cls, Critical).__new__(cls, 2, "critical")
+    def __init__(self) -> None:
+        super().__init__(2, "critical")
 
 
-Critical = Critical()
+critical = Critical()
 
 
 class Unknown(ServiceState):
-    def __new__(cls):
-        return super(cls, Unknown).__new__(cls, 3, "unknown")
+    def __init__(self) -> None:
+        super().__init__(3, "unknown")
 
 
-Unknown = Unknown()
+unknown = Unknown()

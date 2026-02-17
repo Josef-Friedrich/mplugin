@@ -79,7 +79,7 @@ class TestCheck:
         c = Check()
         c._evaluate_resource(R3_Faulty())
         result = c.results[0]
-        assert monitoringplugin.Unknown == result.state
+        assert monitoringplugin.unknown == result.state
         assert "problem" == result.hint
 
     def test_call_evaluates_resources_and_compacts_perfdata(self):
@@ -101,11 +101,11 @@ class TestCheck:
 
         class BareStateContext(monitoringplugin.Context):
             def evaluate(self, metric, resource):
-                return monitoringplugin.Ok
+                return monitoringplugin.ok
 
         c = Check(R5_DefaultMetric(), BareStateContext("m5"))
         c()
-        assert c.results[0].state == monitoringplugin.Ok
+        assert c.results[0].state == monitoringplugin.ok
         assert c.results[0].metric.name == "m5"
 
     def test_first_resource_sets_name(self):
@@ -137,7 +137,7 @@ class TestCheck:
         assert "mycheck" == c.name
 
     def test_check_without_results_is_unkown(self):
-        assert monitoringplugin.Unknown == Check().state
+        assert monitoringplugin.unknown == Check().state
 
     def test_default_summary_if_no_results(self):
         c = Check()
@@ -146,7 +146,7 @@ class TestCheck:
     def test_state_if_resource_has_no_metrics(self):
         c = Check(monitoringplugin.Resource())
         c()
-        assert monitoringplugin.Unknown == c.state
+        assert monitoringplugin.unknown == c.state
         assert 3 == c.exitcode
 
     def test_summary_str_calls_ok_if_state_ok(self):
@@ -156,7 +156,7 @@ class TestCheck:
 
     def test_summary_str_calls_problem_if_state_not_ok(self):
         c = Check(FakeSummary())
-        c.results.add(monitoringplugin.Result(monitoringplugin.Critical))
+        c.results.add(monitoringplugin.Result(monitoringplugin.critical))
         assert "Houston, we have a problem" == c.summary_str
 
     def test_execute(self):

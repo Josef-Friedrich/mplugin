@@ -10,7 +10,7 @@ from .range import Range  # noqa: F401
 from .resource import Resource  # noqa: F401
 from .result import Result, Results  # noqa: F401
 from .runtime import Runtime, guarded  # noqa: F401
-from .state import Critical, Ok, Unknown, Warn  # noqa: F401
+from .state import critical, ok, unknown, warn  # noqa: F401
 from .summary import Summary  # noqa: F401
 from .version import __VERSION__
 

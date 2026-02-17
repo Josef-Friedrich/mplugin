@@ -12,7 +12,7 @@ def make_check():
         summary_str = "summary"
         verbose_str = "long output"
         name = "check"
-        state = monitoringplugin.Ok
+        state = monitoringplugin.ok
         exitcode = 0
         perfdata = None
 

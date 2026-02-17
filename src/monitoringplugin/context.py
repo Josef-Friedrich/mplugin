@@ -18,7 +18,7 @@ from typing import Callable, Optional
 from .performance import Performance
 from .range import Range
 from .result import Result
-from .state import Critical, Ok, Warn
+from .state import critical, ok, warn
 
 if typing.TYPE_CHECKING:
     from .context import Context
@@ -72,7 +72,7 @@ class Context(object):
         :returns: :class:`~.result.Result` or
             :class:`~.state.ServiceState` object
         """
-        return self.result_cls(Ok, metric=metric)
+        return self.result_cls(ok, metric=metric)
 
     # This could be corrected by re-implementing this class as a proper ABC.
     # See issue #43
@@ -165,10 +165,10 @@ class ScalarContext(Context):
         :returns: :class:`~monitoringplugin.result.Result` object
         """
         if not self.critical.match(metric.value):
-            return self.result_cls(Critical, self.critical.violation, metric)
+            return self.result_cls(critical, self.critical.violation, metric)
         if not self.warning.match(metric.value):
-            return self.result_cls(Warn, self.warning.violation, metric)
-        return self.result_cls(Ok, None, metric)
+            return self.result_cls(warn, self.warning.violation, metric)
+        return self.result_cls(ok, None, metric)
 
     def performance(self, metric, resource):
         """Derives performance data.

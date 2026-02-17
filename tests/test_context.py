@@ -26,9 +26,9 @@ class TestContext:
 class TestScalarContext:
     def test_state_ranges_values(self):
         test_cases = [
-            (1, monitoringplugin.Ok, None),
-            (3, monitoringplugin.Warn, "outside range 0:2"),
-            (5, monitoringplugin.Critical, "outside range 0:4"),
+            (1, monitoringplugin.ok, None),
+            (3, monitoringplugin.warn, "outside range 0:2"),
+            (5, monitoringplugin.critical, "outside range 0:4"),
         ]
         c = ScalarContext("ctx", "0:2", "0:4")
         for value, exp_state, exp_reason in test_cases:
