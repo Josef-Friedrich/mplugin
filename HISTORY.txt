@@ -1,6 +1,13 @@
 Release History
 ===============
 
+2.0.0
+-----
+
+- drop support for Python 3.9 and below
+- Remove ScalarResult
+- Add type hints
+
 1.5.0 (not yet released)
 ------------------------
 

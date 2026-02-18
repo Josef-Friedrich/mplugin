@@ -1,7 +1,7 @@
 
 [project]
 name = "monitoringplugin"
-version = "0.1.0"
+version = "2.0.0a0"
 description = "Class library for writing Nagios (Icinga) plugins"
 authors = [
     { name = "Christian Kauhaus", email = "kc@flyingcircus.io" },
