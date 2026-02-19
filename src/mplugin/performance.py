@@ -5,7 +5,7 @@ from typing import Any, Optional
 from mplugin.range import Range
 
 if typing.TYPE_CHECKING:
-    from .range import RangeOrString
+    from .range import RangeSpec
 
 
 def quote(label: str) -> str:
@@ -38,10 +38,10 @@ class Performance:
     uom: Optional[str]
     """unit of measure -- use base units whereever possible"""
 
-    warn: Optional["RangeOrString"]
+    warn: Optional["RangeSpec"]
     """warning range"""
 
-    crit: Optional["RangeOrString"]
+    crit: Optional["RangeSpec"]
     """critical range"""
 
     min: Optional[float]
@@ -58,8 +58,8 @@ class Performance:
         label: str,
         value: Any,
         uom: Optional[str] = None,
-        warn: Optional["RangeOrString"] = None,
-        crit: Optional["RangeOrString"] = None,
+        warn: Optional["RangeSpec"] = None,
+        crit: Optional["RangeSpec"] = None,
         min: Optional[float] = None,
         max: Optional[float] = None,
     ) -> None:

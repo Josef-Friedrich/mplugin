@@ -1,5 +1,7 @@
 from typing import Optional, Union
 
+RangeSpec = Union[str, int, float, "Range"]
+
 
 class Range:
     """Represents a threshold range.
@@ -20,7 +22,7 @@ class Range:
 
     end: float
 
-    def __init__(self, spec: Optional[Union[str, float, "Range"]] = None) -> None:
+    def __init__(self, spec: Optional[RangeSpec] = None) -> None:
         """Creates a Range object according to `spec`.
 
         :param spec: may be either a string, a float, or another
@@ -103,7 +105,7 @@ class Range:
             result.append(("%s" % self.end))
         return "".join(result)
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Human-readable range specification."""
         return self._format()
 
@@ -121,9 +123,6 @@ class Range:
         )
 
     @property
-    def violation(self):
+    def violation(self) -> str:
         """Human-readable description why a value does not match."""
         return "outside range {0}".format(self._format(False))
-
-
-RangeOrString = Range | str
