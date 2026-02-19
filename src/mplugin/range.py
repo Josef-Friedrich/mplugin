@@ -10,7 +10,7 @@ class Range:
     the range expression with "@".
 
     See
-    http://nagiosplug.sourceforge.net/developer-guidelines.html#THRESHOLDFORMAT
+    https://github.com/monitoring-plugins/monitoring-plugin-guidelines/blob/main/definitions/01.range_expressions.md
     for details.
     """
 
