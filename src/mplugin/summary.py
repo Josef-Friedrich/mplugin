@@ -21,7 +21,7 @@ if typing.TYPE_CHECKING:
     from .result import Results
 
 
-class Summary(object):
+class Summary:
     """Creates a summary formatter object.
 
     This base class takes no parameters in its constructor, but subclasses may

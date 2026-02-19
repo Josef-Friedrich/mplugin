@@ -48,7 +48,7 @@ class Result:
         self.hint = hint
         self.metric = metric
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Textual result explanation.
 
         The result explanation is taken from :attr:`metric.description`

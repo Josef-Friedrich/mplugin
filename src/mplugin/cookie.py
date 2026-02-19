@@ -16,8 +16,10 @@ context manager to get it opened and committed automatically.
 
 import json
 import os
+import typing
 from collections import UserDict
 from tempfile import TemporaryFile
+from types import TracebackType
 from typing import Any, Optional
 
 from typing_extensions import Self
@@ -58,7 +60,12 @@ class Cookie(UserDict[str, Any]):
         self.open()
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+    def __exit__(
+        self,
+        exc_type: typing.Optional[type[BaseException]],
+        exc_value: typing.Optional[BaseException],
+        traceback: typing.Optional[TracebackType],
+    ) -> None:
         if not exc_type:
             self.commit()
         self.close()
@@ -98,14 +105,16 @@ class Cookie(UserDict[str, Any]):
         except IOError:
             return open(self.path, "w+", encoding="ascii")
 
-    def _load(self):
+    def _load(self) -> dict[str, Any]:
+        if not self.fobj:
+            raise RuntimeError("file object is none")
         self.fobj.seek(0)
         data = json.load(self.fobj)
         if not isinstance(data, dict):
             raise ValueError(
                 "format error: cookie does not contain dict", self.path, data
             )
-        return data
+        return typing.cast(dict[str, Any], data)
 
     def close(self) -> None:
         """Closes a cookie and its underlying state file.
