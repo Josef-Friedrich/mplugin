@@ -16,7 +16,7 @@ import typing
 from typing import Callable, Optional
 
 from .performance import Performance
-from .range import Range
+from .range import Range, RangeSpec
 from .result import Result
 from .state import critical, ok, warn
 
@@ -132,8 +132,8 @@ class ScalarContext(Context):
     def __init__(
         self,
         name: str,
-        warning: str | float | Range | None = None,
-        critical: str | float | Range | None = None,
+        warning: Optional[RangeSpec] = None,
+        critical: Optional[RangeSpec] = None,
         fmt_metric: FmtMetric = "{name} is {valueunit}",
         result_cls: type[Result] = Result,
     ) -> None:
