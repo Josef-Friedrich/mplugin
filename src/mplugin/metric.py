@@ -15,10 +15,9 @@ from typing_extensions import Self, Unpack
 from mplugin.performance import Performance
 
 if typing.TYPE_CHECKING:
-    from mplugin.result import Result
-
     from .context import Context
     from .resource import Resource
+    from .result import Result
 
 
 class MetricKwargs(TypedDict, total=False):

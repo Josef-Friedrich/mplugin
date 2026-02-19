@@ -128,14 +128,14 @@ class Results:
         :raises ValueError: if `result` is not a :class:`Result` object
         """
         for result in results:
-            if not isinstance(result, Result): # type: ignore
+            if not isinstance(result, Result):  # type: ignore
                 raise ValueError(
                     "trying to add non-Result to Results container", result
                 )
             self.results.append(result)
             self.by_state[result.state].append(result)
             try:
-                self.by_name[result.metric.name] = result # type: ignore
+                self.by_name[result.metric.name] = result  # type: ignore
             except AttributeError:
                 pass
         return self

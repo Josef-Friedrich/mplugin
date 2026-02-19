@@ -1,3 +1,5 @@
+from importlib import metadata
+
 from .check import Check
 from .context import Context, ScalarContext
 from .cookie import Cookie
@@ -13,8 +15,28 @@ from .runtime import Runtime, guarded
 from .state import critical, ok, unknown, warn
 from .summary import Summary
 
-from importlib import metadata
-
 __version__: str = metadata.version("mplugin")
 
-__all__: list[str] = ["Check", "Context", "ScalarContext", "Cookie", "CheckError", "Timeout", "LogTail", "Metric", "MultiArg", "Performance", "Range", "Resource", "Result", "Results", "Runtime", "guarded", "critical", "ok", "unknown", "warn", "Summary"]
+__all__: list[str] = [
+    "Check",
+    "Context",
+    "ScalarContext",
+    "Cookie",
+    "CheckError",
+    "Timeout",
+    "LogTail",
+    "Metric",
+    "MultiArg",
+    "Performance",
+    "Range",
+    "Resource",
+    "Result",
+    "Results",
+    "Runtime",
+    "guarded",
+    "critical",
+    "ok",
+    "unknown",
+    "warn",
+    "Summary",
+]

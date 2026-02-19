@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import os
-from types import TracebackType
 import typing
 from io import BufferedIOBase
+from types import TracebackType
 
 if typing.TYPE_CHECKING:
     from .cookie import Cookie
@@ -39,9 +39,11 @@ class LogTail:
 
     def _seek_if_applicable(self, fileinfo: dict[str, typing.Any]) -> None:
         self.stat = os.stat(self.path)
-        if self.stat.st_ino == fileinfo.get(
-            "inode", -1
-        ) and self.stat.st_size >= fileinfo.get("pos", 0) and self.logfile is not None:
+        if (
+            self.stat.st_ino == fileinfo.get("inode", -1)
+            and self.stat.st_size >= fileinfo.get("pos", 0)
+            and self.logfile is not None
+        ):
             self.logfile.seek(fileinfo["pos"])
 
     def __enter__(self) -> typing.Generator[bytes, typing.Any, None]:
@@ -64,9 +66,12 @@ class LogTail:
             yield line
             line = self.logfile.readline()
 
-    def __exit__(self, exc_type: typing.Optional[type[BaseException]],
-             exc_value: typing.Optional[BaseException],
-             traceback: typing.Optional[TracebackType]) -> None:
+    def __exit__(
+        self,
+        exc_type: typing.Optional[type[BaseException]],
+        exc_value: typing.Optional[BaseException],
+        traceback: typing.Optional[TracebackType],
+    ) -> None:
         if not exc_type and self.stat is not None and self.logfile is not None:
             self.cookie[self.path] = dict(
                 inode=self.stat.st_ino, pos=self.logfile.tell()

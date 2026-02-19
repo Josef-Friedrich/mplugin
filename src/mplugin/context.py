@@ -21,14 +21,13 @@ from .result import Result
 from .state import critical, ok, warn
 
 if typing.TYPE_CHECKING:
-    from .context import Context
     from .metric import Metric
     from .resource import Resource
 
 FmtMetric = str | Callable[["Metric", "Context"], str]
 
 
-class Context(object):
+class Context:
     name: str
     fmt_metric: Optional[FmtMetric]
     result_cls: type[Result]
@@ -52,7 +51,7 @@ class Context(object):
         :param fmt_metric: string or callable to convert
             context and associated metric to a human readable string
         :param result_cls: use this class (usually a
-            :class:`~.result.Result` subclass) to represent the<
+            :class:`~.result.Result` subclass) to represent the
             evaluation outcome
         """
         self.name = name
@@ -126,14 +125,18 @@ class Context(object):
 
 
 class ScalarContext(Context):
+    warning: Range
+
+    critical: Range
+
     def __init__(
         self,
         name: str,
-        warning=None,
-        critical=None,
+        warning: str | float | Range | None = None,
+        critical: str | float | Range | None = None,
         fmt_metric: FmtMetric = "{name} is {valueunit}",
         result_cls: type[Result] = Result,
-    ):
+    ) -> None:
         """Ready-to-use :class:`Context` subclass for scalar values.
 
         ScalarContext models the common case where a single scalar is to
@@ -151,7 +154,7 @@ class ScalarContext(Context):
         self.warning = Range(warning)
         self.critical = Range(critical)
 
-    def evaluate(self, metric, resource):
+    def evaluate(self, metric: "Metric", resource: "Resource") -> Result:
         """Compares metric with ranges and determines result state.
 
         The metric's value is compared to the instance's :attr:`warning`
@@ -170,7 +173,7 @@ class ScalarContext(Context):
             return self.result_cls(warn, self.warning.violation, metric)
         return self.result_cls(ok, None, metric)
 
-    def performance(self, metric, resource):
+    def performance(self, metric: "Metric", resource: "Resource") -> Performance:
         """Derives performance data.
 
         The metric's attributes are combined with the local
@@ -198,7 +201,7 @@ class Contexts:
 
     by_name: dict[str, Context]
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.by_name = dict(
             default=ScalarContext("default", "", ""), null=Context("null")
         )
