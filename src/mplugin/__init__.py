@@ -12,31 +12,32 @@ from .range import Range
 from .resource import Resource
 from .result import Result, Results
 from .runtime import Runtime, guarded
-from .state import critical, ok, unknown, warn
+from .state import ServiceState, critical, ok, unknown, warn
 from .summary import Summary
 
 __version__: str = metadata.version("mplugin")
 
 __all__: list[str] = [
     "Check",
-    "Context",
-    "ScalarContext",
-    "Cookie",
     "CheckError",
-    "Timeout",
+    "Context",
+    "Cookie",
+    "critical",
+    "guarded",
     "LogTail",
     "Metric",
     "MultiArg",
+    "ok",
     "Performance",
     "Range",
     "Resource",
     "Result",
     "Results",
     "Runtime",
-    "guarded",
-    "critical",
-    "ok",
+    "ScalarContext",
+    "ServiceState",
+    "Summary",
+    "Timeout",
     "unknown",
     "warn",
-    "Summary",
 ]
