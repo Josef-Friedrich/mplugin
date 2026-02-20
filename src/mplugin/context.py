@@ -13,12 +13,12 @@ evaluation or performance data logic.
 """
 
 import typing
-from typing import Callable, Optional
+from typing import Callable, Optional, Union
 
 from .performance import Performance
 from .range import Range, RangeSpec
 from .result import Result
-from .state import critical, ok, warn
+from .state import ServiceState, critical, ok, warn
 
 if typing.TYPE_CHECKING:
     from .metric import Metric
@@ -58,7 +58,9 @@ class Context:
         self.fmt_metric = fmt_metric
         self.result_cls = result_cls
 
-    def evaluate(self, metric: "Metric", resource: "Resource") -> Result:
+    def evaluate(
+        self, metric: "Metric", resource: "Resource"
+    ) -> Union[Result, ServiceState]:
         """Determines state of a given metric.
 
         This base implementation returns :class:`~mplugin.state.Ok`

@@ -8,16 +8,17 @@ as result of their :meth:`~.resource.Resource.probe` methods.
 
 import numbers
 import typing
-from typing import Any, Optional, TypedDict
+from typing import Any, Optional, TypedDict, Union
 
 from typing_extensions import Self, Unpack
 
-from mplugin.performance import Performance
+from .performance import Performance
 
 if typing.TYPE_CHECKING:
     from .context import Context
     from .resource import Resource
     from .result import Result
+    from .state import ServiceState
 
 
 class MetricKwargs(TypedDict, total=False):
@@ -133,7 +134,7 @@ class Metric:
             return "%.4g" % self.value
         return str(self.value)
 
-    def evaluate(self) -> "Result":
+    def evaluate(self) -> Union["Result", "ServiceState"]:
         """Evaluates this instance according to the context.
 
         :return: :class:`~mplugin.result.Result` object

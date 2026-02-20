@@ -30,7 +30,7 @@ R = TypeVar("R")
 
 
 def guarded(
-    original_function: Optional[Callable[P, R]] = None, verbose: Optional[bool] = None
+    original_function: Optional[Callable[P, R]] = None, verbose: Optional[int] = None
 ) -> Callable[P, R]:
     """Runs a function mplugin's Runtime environment.
 

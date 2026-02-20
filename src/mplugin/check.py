@@ -78,7 +78,7 @@ class Check:
                 self.contexts.add(obj)
             elif isinstance(obj, Summary):
                 self.summary = obj
-            elif isinstance(obj, Results): # type: ignore
+            elif isinstance(obj, Results):  # type: ignore
                 self.results = obj
             else:
                 raise TypeError("cannot add type {0} to check".format(type(obj)), obj)
@@ -99,7 +99,7 @@ class Check:
                 result = metric.evaluate()
                 if isinstance(result, Result):
                     self.results.add(result)
-                elif isinstance(result, ServiceState):
+                elif isinstance(result, ServiceState): # type: ignore
                     self.results.add(Result(result, metric=metric))
                 else:
                     raise ValueError(
