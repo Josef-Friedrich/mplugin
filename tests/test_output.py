@@ -1,44 +1,43 @@
 import io
 import logging
 
-import mplugin
-from mplugin import Output
+from mplugin import Output, ok
 
 
 class FakeCheck:
     name = "Fake"
-    state = mplugin.ok
+    state = ok
     summary_str = "check summary"
     verbose_str = "hello world\n"
     perfdata = ["foo=1m;2;3", "bar=1s;2;3"]
 
 
 class TestOutput:
-    def setup_method(self):
+    def setup_method(self) -> None:
         self.logio = io.StringIO()
         self.logchan = logging.StreamHandler(self.logio)
 
-    def test_add_longoutput_string(self):
+    def test_add_longoutput_string(self) -> None:
         o = Output(self.logchan)
         o.add_longoutput("first line\nsecond line\n")
         assert str(o) == "first line\nsecond line\n"
 
-    def test_add_longoutput_list(self):
+    def test_add_longoutput_list(self) -> None:
         o = Output(self.logchan)
         o.add_longoutput(["first line", "second line"])
         assert str(o) == "first line\nsecond line\n"
 
-    def test_add_longoutput_tuple(self):
+    def test_add_longoutput_tuple(self) -> None:
         o = Output(self.logchan)
         o.add_longoutput(("first line", "second line"))
         assert str(o) == "first line\nsecond line\n"
 
-    def test_str_should_append_log(self):
+    def test_str_should_append_log(self) -> None:
         o = Output(self.logchan)
         print("debug log output", file=self.logio)
         assert "debug log output\n" == str(o)
 
-    def test_empty_summary_perfdata(self):
+    def test_empty_summary_perfdata(self) -> None:
         o = Output(self.logchan)
         check = FakeCheck()
         check.summary_str = ""
@@ -46,7 +45,7 @@ class TestOutput:
         o.add(check)
         assert "FAKE OK\n" == str(o)
 
-    def test_empty_name(self):
+    def test_empty_name(self) -> None:
         o = Output(self.logchan)
         check = FakeCheck()
         check.name = None
@@ -54,7 +53,7 @@ class TestOutput:
         o.add(check)
         assert "OK - check summary\n" == str(o)
 
-    def test_summary_utf8(self):
+    def test_summary_utf8(self) -> None:
         o = Output(self.logchan)
         check = FakeCheck()
         check.summary_str = "utf-8 ümłäúts"
@@ -62,19 +61,19 @@ class TestOutput:
         o.add(check)
         assert "FAKE OK - utf-8 ümłäúts\n" == "{0}".format(o)
 
-    def test_add_check_singleline(self):
+    def test_add_check_singleline(self) -> None:
         o = Output(self.logchan)
         o.add(FakeCheck())
         assert "FAKE OK - check summary | foo=1m;2;3 bar=1s;2;3\n" == str(o)
 
-    def test_add_check_multiline(self):
+    def test_add_check_multiline(self) -> None:
         o = Output(self.logchan, verbose=1)
         o.add(FakeCheck())
         assert "FAKE OK - check summary\nhello world\n| foo=1m;2;3 bar=1s;2;3\n" == str(
             o
         )
 
-    def test_remove_illegal_chars(self):
+    def test_remove_illegal_chars(self) -> None:
         check = FakeCheck()
         check.summary_str = "PIPE | STATUS"
         check.verbose_str = "long pipe | output"
@@ -87,7 +86,7 @@ class TestOutput:
             == str(o)
         )
 
-    def test_long_perfdata(self):
+    def test_long_perfdata(self) -> None:
         check = FakeCheck()
         check.verbose_str = ""
         check.perfdata = ["duration=340.4ms;500;1000;0"] * 5
@@ -98,7 +97,7 @@ class TestOutput:
             == str(o)
         )
 
-    def test_log_output_precedes_perfdata(self):
+    def test_log_output_precedes_perfdata(self) -> None:
         check = FakeCheck()
         check.perfdata = ["foo=1"]
         print("debug log output", file=self.logio)

@@ -2,11 +2,10 @@ import time
 
 import pytest
 
-import mplugin
-from mplugin import with_timeout
+from mplugin import Timeout, with_timeout
 
 
 class TestPlatform:
-    def test_timeout(self):
-        with pytest.raises(mplugin.Timeout):
+    def test_timeout(self) -> None:
+        with pytest.raises(Timeout):
             with_timeout(1, time.sleep, 2)

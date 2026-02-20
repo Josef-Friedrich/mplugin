@@ -98,13 +98,13 @@ class TestRangeStr:
     def test_invert(self) -> None:
         assert "@3:7" == str(Range("@3:7"))
 
-    def test_large_number(self):
+    def test_large_number(self) -> None:
         assert "2800000000" == str(Range("2800000000"))
 
     def test_violation_outside(self) -> None:
         assert "outside range 2:3" == Range("2:3").violation
 
-    def test_violation_greater_than(self):
+    def test_violation_greater_than(self) -> None:
         assert "outside range 0:4" == Range("4").violation
 
     def test_violation_empty_range(self) -> None:

@@ -3,8 +3,7 @@ from io import StringIO
 
 import pytest
 
-import mplugin
-from mplugin import Runtime, guarded
+from mplugin import Runtime, Timeout, guarded, ok
 
 
 def make_check():
@@ -12,18 +11,18 @@ def make_check():
         summary_str = "summary"
         verbose_str = "long output"
         name = "check"
-        state = mplugin.ok
+        state = ok
         exitcode = 0
         perfdata = None
 
-        def __call__(self):
+        def __call__(self) -> None:
             pass
 
     return Check()
 
 
 class TestRuntimeBase:
-    def setup_method(self):
+    def setup_method(self) -> None:
         Runtime.instance = None
         self.r = Runtime()
         self.r.sysexit = lambda: None
@@ -31,14 +30,14 @@ class TestRuntimeBase:
 
 
 class RuntimeTest(TestRuntimeBase):
-    def test_runtime_is_singleton(self):
+    def test_runtime_is_singleton(self) -> None:
         assert self.r == Runtime()
 
-    def test_run_sets_exitcode(self):
+    def test_run_sets_exitcode(self) -> None:
         self.r.run(make_check())
         assert 0 == self.r.exitcode
 
-    def test_verbose(self):
+    def test_verbose(self) -> None:
         testcases = [
             (None, logging.WARNING, 0),
             (1, logging.WARNING, 1),
@@ -63,7 +62,7 @@ class RuntimeTest(TestRuntimeBase):
 
 
 class RuntimeExceptionTest(TestRuntimeBase):
-    def setup_method(self):
+    def setup_method(self) -> None:
         super(RuntimeExceptionTest, self).setUp()
 
     def run_main_with_exception(self, exc):
@@ -88,23 +87,23 @@ class RuntimeExceptionTest(TestRuntimeBase):
         assert "Traceback" in self.r.stdout.getvalue()
 
     def test_handle_timeout_exception(self):
-        self.run_main_with_exception(mplugin.Timeout("1s"))
+        self.run_main_with_exception(Timeout("1s"))
         assert (
             "UNKNOWN: Timeout: check execution aborted after 1s"
             in self.r.stdout.getvalue()
         )
 
-    def test_guarded_set_verbosity(self):
+    def test_guarded_set_verbosity(self) -> None:
         @guarded(verbose=0)
-        def main():
+        def main() -> None:
             pass
 
         main()
         assert 0 == self.r.verbose
 
-    def test_guarded_no_keyword(self):
+    def test_guarded_no_keyword(self) -> None:
         with pytest.raises(AssertionError):
 
             @guarded(0)
-            def main():
+            def main() -> None:
                 pass

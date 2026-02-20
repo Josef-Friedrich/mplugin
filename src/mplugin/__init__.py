@@ -364,7 +364,7 @@ def with_timeout(t, func, *args: Any, **kwargs: Any) -> None:
             raise Timeout("{0}s".format(t))
 
 
-def flock_exclusive(fileobj):
+def flock_exclusive(fileobj) -> None:
     """Acquire exclusive lock for open file `fileobj`."""
 
     if os.name == "posix":
@@ -375,6 +375,8 @@ def flock_exclusive(fileobj):
         msvcrt = importlib.import_module("msvcrt")
         msvcrt.locking(fileobj.fileno(), msvcrt.LK_LOCK, 2147483647)
 
+
+# cookie.py
 
 """Persistent dict to remember state between invocations.
 
@@ -391,8 +393,6 @@ access to it. Changes to the dict are not reflected in the file until
 :meth:`Cookie.commit` is called. It is recommended to use Cookie as
 context manager to get it opened and committed automatically.
 """
-
-# cookie.py
 
 
 class Cookie(UserDict[str, Any]):

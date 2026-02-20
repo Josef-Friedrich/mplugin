@@ -1,10 +1,23 @@
 import pytest
 
-import mplugin
-from mplugin import Check
+from mplugin import (
+    Check,
+    CheckError,
+    Context,
+    Metric,
+    Resource,
+    Result,
+    Results,
+    Runtime,
+    ScalarContext,
+    Summary,
+    critical,
+    ok,
+    unknown,
+)
 
 
-class FakeSummary(mplugin.Summary):
+class FakeSummary(Summary):
     def ok(self, results):
         return "I'm feelin' good"
 
@@ -12,31 +25,31 @@ class FakeSummary(mplugin.Summary):
         return "Houston, we have a problem"
 
 
-class R1_MetricDefaultContext(mplugin.Resource):
+class R1_MetricDefaultContext(Resource):
     def probe(self):
-        return [mplugin.Metric("foo", 1, context="default")]
+        return [Metric("foo", 1, context="default")]
 
 
 class TestCheck:
     def test_add_resource(self) -> None:
         c = Check()
-        r1 = mplugin.Resource()
-        r2 = mplugin.Resource()
+        r1 = Resource()
+        r2 = Resource()
         c.add(r1, r2)
         assert [r1, r2] == c.resources
 
     def test_add_context(self) -> None:
-        ctx = mplugin.ScalarContext("ctx1", "", "")
+        ctx = ScalarContext("ctx1", "", "")
         c = Check(ctx)
         assert ctx.name in c.contexts
 
     def test_add_summary(self) -> None:
-        s = mplugin.Summary()
+        s = Summary()
         c = Check(s)
         assert s == c.summary
 
     def test_add_results(self) -> None:
-        r = mplugin.Results()
+        r = Results()
         c = Check(r)
         assert r == c.results
 
@@ -45,9 +58,9 @@ class TestCheck:
             Check(object())  # type: ignore
 
     def test_check_should_accept_resource_returning_bare_metric(self) -> None:
-        class R_ReturnsBareMetric(mplugin.Resource):
+        class R_ReturnsBareMetric(Resource):
             def probe(self):
-                return mplugin.Metric("foo", 0, context="default")
+                return Metric("foo", 0, context="default")
 
         res = R_ReturnsBareMetric()
         c = Check(res)
@@ -63,31 +76,31 @@ class TestCheck:
         assert ["foo=1"] == c.perfdata
 
     def test_evaluate_resource_looks_up_context(self) -> None:
-        class R2_MetricCustomContext(mplugin.Resource):
+        class R2_MetricCustomContext(Resource):
             def probe(self):
-                return [mplugin.Metric("bar", 2)]
+                return [Metric("bar", 2)]
 
-        ctx = mplugin.ScalarContext("bar", "1", "1")
+        ctx = ScalarContext("bar", "1", "1")
         c = Check(ctx)
         c._evaluate_resource(R2_MetricCustomContext())
         assert c.results[0].metric
         assert c.results[0].metric.contextobj == ctx
 
     def test_evaluate_resource_catches_checkerror(self) -> None:
-        class R3_Faulty(mplugin.Resource):
+        class R3_Faulty(Resource):
             def probe(self):
-                raise mplugin.CheckError("problem")
+                raise CheckError("problem")
 
         c = Check()
         c._evaluate_resource(R3_Faulty())
         result = c.results[0]
-        assert mplugin.unknown == result.state
+        assert unknown == result.state
         assert "problem" == result.hint
 
     def test_call_evaluates_resources_and_compacts_perfdata(self) -> None:
-        class R4_NoPerfdata(mplugin.Resource):
+        class R4_NoPerfdata(Resource):
             def probe(self):
-                return [mplugin.Metric("m4", 4, context="null")]
+                return [Metric("m4", 4, context="null")]
 
         c = Check(R1_MetricDefaultContext(), R4_NoPerfdata())
         c()
@@ -95,24 +108,24 @@ class TestCheck:
         assert ["foo=1"] == c.perfdata
 
     def test_evaluate_bare_state_is_autowrapped_in_result(self) -> None:
-        metric = mplugin.Metric("m5", 0)
+        metric = Metric("m5", 0)
 
-        class R5_DefaultMetric(mplugin.Resource):
+        class R5_DefaultMetric(Resource):
             def probe(self):
                 return [metric]
 
-        class BareStateContext(mplugin.Context):
+        class BareStateContext(Context):
             def evaluate(self, metric, resource):
-                return mplugin.ok
+                return ok
 
         c = Check(R5_DefaultMetric(), BareStateContext("m5"))
         c()
-        assert c.results[0].state == mplugin.ok
+        assert c.results[0].state == ok
         assert c.results[0].metric
         assert c.results[0].metric.name == "m5"
 
     def test_first_resource_sets_name(self) -> None:
-        class MyResource(mplugin.Resource):
+        class MyResource(Resource):
             pass
 
         c = Check()
@@ -121,13 +134,13 @@ class TestCheck:
         assert "MyResource" == c.name
 
     def test_utf8(self) -> None:
-        class UTF8(mplugin.Resource):
+        class UTF8(Resource):
             def probe(self):
-                return mplugin.Metric("utf8", 8, context="utf8")
+                return Metric("utf8", 8, context="utf8")
 
         c = Check(
             UTF8(),
-            mplugin.ScalarContext("utf8", "1:1", fmt_metric="über {value}"),
+            ScalarContext("utf8", "1:1", fmt_metric="über {value}"),
         )
         c()
         assert "über 8 (outside range 1:1)" == c.summary_str
@@ -136,20 +149,20 @@ class TestCheck:
     def test_set_explicit_name(self) -> None:
         c = Check()
         c.name = "mycheck"
-        c.add(mplugin.Resource())
+        c.add(Resource())
         assert "mycheck" == c.name
 
     def test_check_without_results_is_unkown(self) -> None:
-        assert mplugin.unknown == Check().state
+        assert unknown == Check().state
 
     def test_default_summary_if_no_results(self) -> None:
         c = Check()
         assert "no check results" == c.summary_str
 
     def test_state_if_resource_has_no_metrics(self) -> None:
-        c = Check(mplugin.Resource())
+        c = Check(Resource())
         c()
-        assert mplugin.unknown == c.state
+        assert unknown == c.state
         assert 3 == c.exitcode
 
     def test_summary_str_calls_ok_if_state_ok(self) -> None:
@@ -159,7 +172,7 @@ class TestCheck:
 
     def test_summary_str_calls_problem_if_state_not_ok(self) -> None:
         c = Check(FakeSummary())
-        c.results.add(mplugin.Result(mplugin.critical))
+        c.results.add(Result(critical))
         assert "Houston, we have a problem" == c.summary_str
 
     def test_execute(self):
@@ -167,7 +180,7 @@ class TestCheck:
             assert 2 == verbose
             assert 20 == timeout
 
-        r = mplugin.Runtime()
+        r = Runtime()
         r.execute = fake_execute
         Check().main(2, 20)
 
