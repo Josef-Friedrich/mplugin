@@ -13,7 +13,9 @@ import logging
 import sys
 import traceback
 import typing
-from typing import Any, NoReturn, Optional
+from typing import Any, Callable, NoReturn, Optional, ParamSpec, TypeVar
+
+from typing_extensions import Self
 
 from .error import Timeout
 from .output import Output
@@ -23,7 +25,13 @@ if typing.TYPE_CHECKING:
     from mplugin.check import Check
 
 
-def guarded(original_function=None, verbose=None):
+P = ParamSpec("P")
+R = TypeVar("R")
+
+
+def guarded(
+    original_function: Optional[Callable[P, R]] = None, verbose: Optional[bool] = None
+) -> Callable[P, R]:
     """Runs a function mplugin's Runtime environment.
 
     `guarded` makes the decorated function behave correctly with respect
@@ -40,24 +48,24 @@ def guarded(original_function=None, verbose=None):
         use `@guarded(verbose=0)` to turn tracebacks in that phase off.
     """
 
-    def _decorate(func):
+    def _decorate(func: Callable[P, R]):
         @functools.wraps(func)
         # This inconsistent-return-statements error can be fixed by adding a
         # NoReturn type hint to Runtime._handle_exception(), but we can't do
         # that as long as we're maintaining py27 compatability.
         # pylint: disable-next=inconsistent-return-statements
-        def wrapper(*args, **kwds):
+        def wrapper(*args: Any, **kwds: Any):
             runtime = Runtime()
             if verbose is not None:
                 runtime.verbose = verbose
             try:
                 return func(*args, **kwds)
             except Timeout as exc:
-                runtime._handle_exception(
+                runtime._handle_exception(  # type: ignore
                     "Timeout: check execution aborted after {0}".format(exc)
                 )
             except Exception:
-                runtime._handle_exception()
+                runtime._handle_exception()  # type: ignore
 
         return wrapper
 
@@ -68,7 +76,7 @@ def guarded(original_function=None, verbose=None):
             )
         )
         return _decorate(original_function)
-    return _decorate
+    return _decorate  # type: ignore
 
 
 class Runtime:
@@ -81,7 +89,7 @@ class Runtime:
     stdout = None
     exitcode: int = 70  # EX_SOFTWARE
 
-    def __new__(cls):
+    def __new__(cls) -> Self:
         if not cls.instance:
             cls.instance = super(Runtime, cls).__new__(cls)
         return cls.instance
@@ -128,7 +136,7 @@ class Runtime:
             self.logchan.setLevel(logging.WARNING)
         self.output.verbose = self._verbose
 
-    def run(self, check: "Check"):
+    def run(self, check: "Check") -> None:
         check()
         self.output.add(check)
         self.exitcode = check.exitcode

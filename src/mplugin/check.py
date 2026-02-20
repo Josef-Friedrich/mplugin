@@ -12,7 +12,7 @@ delegate control to it.
 """
 
 import logging
-from typing import Any, NoReturn
+from typing import Any, NoReturn, Optional
 
 from .context import Context, Contexts
 from .error import CheckError
@@ -26,7 +26,7 @@ from .summary import Summary
 _log = logging.getLogger(__name__)
 
 
-class Check(object):
+class Check:
     resources: list[Resource]
     contexts: Contexts
     summary: Summary
@@ -34,7 +34,11 @@ class Check(object):
     perfdata: list[str]
     name: str
 
-    def __init__(self, *objects: Resource | Context | Summary | Results, **kwargs):
+    def __init__(
+        self,
+        *objects: Resource | Context | Summary | Results,
+        name: Optional[str] = None,
+    ) -> None:
         """Creates and configures a check.
 
         Specialized *objects* representing resources, contexts,
@@ -48,8 +52,8 @@ class Check(object):
         self.summary = Summary()
         self.results = Results()
         self.perfdata = []
-        if "name" in kwargs and kwargs["name"] != "":
-            self.name = kwargs["name"]
+        if name is not None:
+            self.name = name
         else:
             self.name = ""
         self.add(*objects)
@@ -74,7 +78,7 @@ class Check(object):
                 self.contexts.add(obj)
             elif isinstance(obj, Summary):
                 self.summary = obj
-            elif isinstance(obj, Results):
+            elif isinstance(obj, Results): # type: ignore
                 self.results = obj
             else:
                 raise TypeError("cannot add type {0} to check".format(type(obj)), obj)
