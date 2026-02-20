@@ -1,10 +1,16 @@
-The mplugin library
-============================
+The m(onitoring)plugin library
+==============================
+
+This is a fork of the `nagiosplugin`_. Changes:
+
+- Type hints
+- Removed deprecated code: ``ScalarResult``
+- ``Ok`` renamed to ``ok``
 
 About
 -----
 
-**mplugin** is a Python class library which helps writing Nagios (or Icinga)
+**mplugin** is a Python class library which helps writing Nagios or Icinga
 compatible plugins easily in Python. It cares for much of the boilerplate code
 and default logic commonly found in Nagios checks, including:
 
@@ -17,10 +23,10 @@ and default logic commonly found in Nagios checks, including:
 - Timeout handling
 - Persistent "cookies" to retain state information between check runs
 - Resume log file processing at the point where the last run left
-- No dependencies beyond the Python standard library (except for Python 2.6).
+- No dependencies beyond the Python standard library.
 
 **mplugin** runs on POSIX and Windows systems. It is compatible with
-and Python 3.9 and later.
+and Python 3.10 and later.
 
 Feedback and Suggestions
 ------------------------
@@ -36,7 +42,6 @@ License
 The mplugin package is released under the Zope Public License 2.1 (ZPL), a
 BSD-style Open Source license.
 
-
 Documentation
 -------------
 
@@ -46,6 +51,7 @@ the source distribution.
 
 .. _available online: https://mplugin.readthedocs.io/
 .. _tutorials: https://mplugin.readthedocs.io/en/stable/tutorial/
+.. _nagiosplugin: https://github.com/mpounsett/nagiosplugin
 
 Acknowledgements
 ----------------
@@ -53,5 +59,3 @@ Acknowledgements
 mplugin was originally written and maintained by Christian Kauhaus
 <kc@flyingcircus.io>.  Additional contributions from the community are
 acknowledged in the file CONTRIBUTORS.txt
-
-.. vim: set ft=rst:
