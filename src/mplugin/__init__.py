@@ -1778,7 +1778,7 @@ class Check:
         except CheckError as e:
             self.results.add(Result(unknown, str(e), metric))
 
-    def __call__(self):
+    def __call__(self) -> None:
         """Actually run the check.
 
         After a check has been called, the :attr:`results` and
@@ -1859,7 +1859,12 @@ class Check:
 
 
 class __CustomArgumentParser(argparse.ArgumentParser):
-    """To get --help and --version exit with 3"""
+    """
+    Override the exit method for the options ``--help``, ``-h`` and ``--version``,
+    ``-V`` with ``Unknown`` (exit code 3), according to the
+    `Monitoring Plugin Guidelines
+    <https://github.com/monitoring-plugins/monitoring-plugin-guidelines/blob/main/monitoring_plugins_interface/02.Input.md>`__.
+    """
 
     def exit(
         self, status: int = 3, message: typing.Optional[str] = None
@@ -1935,5 +1940,13 @@ def setup_argparser(
         description="\n".join(description_lines),
         epilog=epilog,
     )
+
+    if version is not None:
+        parser.add_argument(
+            "-V",
+            "--version",
+            action="version",
+            version=f"%(prog)s {__version__}",
+        )
 
     return parser
