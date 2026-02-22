@@ -1946,7 +1946,7 @@ def setup_argparser(
             "-V",
             "--version",
             action="version",
-            version=f"%(prog)s {__version__}",
+            version=f"%(prog)s {version}",
         )
 
     return parser
