@@ -1485,6 +1485,30 @@ class Context:
         in all cases. Plugin authors may override this method in
         subclasses to specialize behaviour.
 
+        A plugin can perform several measurements at once.
+
+        .. code:: Python
+
+            def probe(self):
+                self.users = self.list_users()
+                self.unique_users = set(self.users)
+                return [Metric('total', len(self.users), min=0,
+                                            context='users'),
+                        Metric('unique', len(self.unique_users), min=0,
+                                            context='users')]
+
+        Alternatively, the probe() method can act as generator and yield metrics:
+
+        .. code:: Python
+
+            def probe(self):
+                self.users = self.list_users()
+                self.unique_users = set(self.users)
+                yield mplugin.Metric('total', len(self.users), min=0,
+                                        context='users')
+                yield mplugin.Metric('unique', len(self.unique_users), min=0,
+                                        context='users')]
+
         :param metric: associated metric that is to be evaluated
         :param resource: resource that produced the associated metric
             (may optionally be consulted)
@@ -1531,6 +1555,26 @@ class Context:
 
         This base implementation just returns none. Plugin authors may
         override this method in subclass to specialize behaviour.
+
+        .. code:: Python
+
+            def performance(self, metric: Metric, resource: Resource) -> Performance:
+                return Performance(label=metric.name, value=metric.value)
+
+        .. code:: Python
+
+            def performance(self, metric: Metric, resource: Resource) -> Performance | None:
+                if not opts.performance_data:
+                    return None
+                return Performance(
+                    metric.name,
+                    metric.value,
+                    metric.uom,
+                    self.warning,
+                    self.critical,
+                    metric.min,
+                    metric.max,
+                )
 
         :param metric: associated metric from which performance data are
             derived

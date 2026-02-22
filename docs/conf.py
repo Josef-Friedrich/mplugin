@@ -12,7 +12,7 @@ extensions: list[str] = [
     "sphinx.ext.viewcode",
 ]
 
-project = "Python project boilerplate"
+project = "m(onitoring)plugin"
 copyright: str = f"2010-{datetime.now().year}, Flying Circus Internet Operations GmbH, Christian Kauhaus, Josef Friedrich"
 author = "Josef Friedrich"
 

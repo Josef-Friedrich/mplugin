@@ -51,3 +51,8 @@ Download = "https://pypi.org/project/mplugin/"
 Source = "https://github.com/Josef-Friedrich/mplugin"
 Issues = "https://github.com/Josef-Friedrich/mplugin/issues"
 Changelog = "https://github.com/Josef-Friedrich/mplugin/blob/main/HISTORY.txt"
+
+[tool.ruff]
+
+[tool.ruff.format]
+docstring-code-format = true
