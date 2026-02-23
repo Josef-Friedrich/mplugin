@@ -5,12 +5,12 @@ from mplugin import (
     CheckError,
     Context,
     Metric,
-    Ok,
     Resource,
     Result,
     Results,
     Runtime,
     ScalarContext,
+    ServiceState,
     Summary,
     critical,
     ok,
@@ -116,7 +116,7 @@ class TestCheck:
                 return [metric]
 
         class BareStateContext(Context):
-            def evaluate(self, metric, resource) -> Ok:
+            def evaluate(self, metric, resource) -> ServiceState:
                 return ok
 
         c = Check(R5_DefaultMetric(), BareStateContext("m5"))

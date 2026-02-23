@@ -116,15 +116,15 @@ class ServiceState:
         return hash((self.code, self.text))
 
 
-class Ok(ServiceState):
+class __Ok(ServiceState):
     def __init__(self) -> None:
         super().__init__(0, "ok")
 
 
-ok = Ok()
+ok = __Ok()
 
 
-class Warn(ServiceState):
+class __Warn(ServiceState):
     def __init__(self) -> None:
         super().__init__(1, "warning")
 
@@ -132,23 +132,23 @@ class Warn(ServiceState):
 # According to the Nagios development guidelines, this should be Warning,
 # not Warn, but renaming the class would occlude the built-in Warning
 # exception class.
-warn = Warn()
+warn = __Warn()
 
 
-class Critical(ServiceState):
+class __Critical(ServiceState):
     def __init__(self) -> None:
         super().__init__(2, "critical")
 
 
-critical = Critical()
+critical = __Critical()
 
 
-class Unknown(ServiceState):
+class __Unknown(ServiceState):
     def __init__(self) -> None:
         super().__init__(3, "unknown")
 
 
-unknown = Unknown()
+unknown = __Unknown()
 
 # range.py
 
@@ -426,7 +426,7 @@ class Cookie(UserDict[str, typing.Any]):
             self.commit()
         self.close()
 
-    def open(self):
+    def open(self) -> typing_extensions.Self:
         """Reads/creates the state file and initializes the dict.
 
         If the state file does not exist, it is touched into existence.
@@ -1010,7 +1010,7 @@ class Metric:
         self.contextobj = contextobj
         self.resource = resource
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Same as :attr:`valueunit`."""
         return self.valueunit
 
@@ -1023,7 +1023,7 @@ class Metric:
         return self
 
     @property
-    def description(self):
+    def description(self) -> typing.Optional[str]:
         """Human-readable, detailed string representation.
 
         Delegates to the :class:`~.context.Context` to format the value.
@@ -1236,7 +1236,7 @@ class Results:
         if results:
             self.add(*results)
 
-    def add(self, *results: Result):
+    def add(self, *results: Result) -> typing_extensions.Self:
         """Adds more results to the container.
 
         Besides passing :class:`Result` objects in the constructor,
@@ -1257,7 +1257,7 @@ class Results:
                 pass
         return self
 
-    def __iter__(self):
+    def __iter__(self) -> typing.Generator[Result, typing.Any, None]:
         """Iterates over all results.
 
         The iterator is sorted in order of decreasing state
@@ -1269,7 +1269,7 @@ class Results:
             for result in self.by_state[state]:
                 yield result
 
-    def __len__(self):
+    def __len__(self) -> int:
         """Number of results in this container."""
         return len(self.results)
 
