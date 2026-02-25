@@ -122,6 +122,7 @@ class __Ok(ServiceState):
 
 
 ok = __Ok()
+"""The plugin was able to check the service and it appeared to be functioning properly"""
 
 
 class __Warn(ServiceState):
@@ -285,8 +286,38 @@ class Range:
 
 
 class MultiArg:
+    """
+    A container class for handling multiple arguments that can be indexed and iterated.
+
+    This class is designed to be used as a type converter in argparse for arguments
+    that accept comma-separated or otherwise delimited values. It provides convenient
+    access to individual arguments with optional fill values for missing indices.
+
+
+    .. code-block:: python
+
+        argp.add_argument(
+            "--tw",
+            "--ttot-warning",
+            metavar="RANGE[,RANGE,...]",
+            type=mplugin.MultiArg,
+            default="",
+        )
+
+    :param args: The list of parsed argument strings.
+    :param fill: An optional default value to return for indices
+        beyond the length of the args list. If not provided, the last argument
+        is returned instead, or None if the list is empty.
+    :param splitchar:
+    """
+
     args: list[str]
+    """The list of parsed argument strings."""
+
     fill: typing.Optional[str]
+    """An optional default value to return for indices
+    beyond the length of the args list. If not provided, the last argument
+    is returned instead, or None if the list is empty."""
 
     def __init__(
         self,
@@ -322,7 +353,7 @@ class MultiArg:
 # platform.py
 
 
-def with_timeout(
+def _with_timeout(
     time: int, func: typing.Callable[P, R], *args: typing.Any, **kwargs: typing.Any
 ) -> None:
     """Call `func` but terminate after `t` seconds."""
@@ -352,7 +383,7 @@ def with_timeout(
             raise Timeout("{0}s".format(time))
 
 
-def flock_exclusive(fileobj: io.TextIOWrapper) -> None:
+def _flock_exclusive(fileobj: io.TextIOWrapper) -> None:
     """Acquire exclusive lock for open file `fileobj`."""
 
     if os.name == "posix":
@@ -441,7 +472,7 @@ class Cookie(UserDict[str, typing.Any]):
             deserialize into a dict
         """
         self.fobj = self._create_fobj()
-        flock_exclusive(self.fobj)
+        _flock_exclusive(self.fobj)
         if os.fstat(self.fobj.fileno()).st_size:
             try:
                 self.data = self._load()
@@ -580,14 +611,14 @@ class LogTail:
 # output.py
 
 
-def filter_output(output: str, filtered: str) -> str:
+def _filter_output(output: str, filtered: str) -> str:
     """Filters out characters from output"""
     for char in filtered:
         output = output.replace(char, "")
     return output
 
 
-class Output:
+class _Output:
     ILLEGAL = "|"
 
     logchan: StreamHandler[io.StringIO]
@@ -659,7 +690,7 @@ class Output:
 
     def _screen_chars(self, text: str, where: str) -> str:
         text = text.rstrip("\n")
-        screened = filter_output(text, self.ILLEGAL)
+        screened = _filter_output(text, self.ILLEGAL)
         if screened != text:
             self.warnings.append(
                 self._illegal_chars_warning(where, set(text) - set(screened))
@@ -851,7 +882,7 @@ class _Runtime:
     _verbose = 1
     timeout: typing.Optional[int] = None
     logchan: logging.StreamHandler[io.StringIO]
-    output: Output
+    output: _Output
     stdout = None
     exitcode: int = 70  # EX_SOFTWARE
 
@@ -866,7 +897,7 @@ class _Runtime:
         self.logchan = logging.StreamHandler(io.StringIO())
         self.logchan.setFormatter(logging.Formatter("%(message)s"))
         rootlogger.addHandler(self.logchan)
-        self.output = Output(self.logchan)
+        self.output = _Output(self.logchan)
 
     def _handle_exception(
         self, statusline: typing.Optional[str] = None
@@ -918,7 +949,7 @@ class _Runtime:
         if timeout is not None:
             self.timeout = int(timeout)
         if self.timeout:
-            with_timeout(self.timeout, self.run, check)
+            _with_timeout(self.timeout, self.run, check)
         else:
             self.run(check)
         print("{0}".format(self.output), end="", file=self.stdout)
@@ -939,7 +970,7 @@ as result of their :meth:`~.resource.Resource.probe` methods.
 """
 
 
-class MetricKwargs(typing.TypedDict, total=False):
+class _MetricKwargs(typing.TypedDict, total=False):
     name: str
     value: typing.Any
     uom: str
@@ -1015,7 +1046,7 @@ class Metric:
         return self.valueunit
 
     def replace(
-        self, **attr: typing_extensions.Unpack[MetricKwargs]
+        self, **attr: typing_extensions.Unpack[_MetricKwargs]
     ) -> typing_extensions.Self:
         """Creates new instance with updated attributes."""
         for key, value in attr.items():
@@ -1487,19 +1518,19 @@ class Context:
 
         A plugin can perform several measurements at once.
 
-        .. code:: Python
+        .. code-block:: Python
 
             def probe(self):
                 self.users = self.list_users()
                 self.unique_users = set(self.users)
-                return [Metric('total', len(self.users), min=0,
-                                            context='users'),
-                        Metric('unique', len(self.unique_users), min=0,
-                                            context='users')]
+                return [
+                    Metric("total", len(self.users), min=0, context="users"),
+                    Metric("unique", len(self.unique_users), min=0, context="users"),
+                ]
 
         Alternatively, the probe() method can act as generator and yield metrics:
 
-        .. code:: Python
+        .. code-block:: Python
 
             def probe(self):
                 self.users = self.list_users()
