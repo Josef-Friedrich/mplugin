@@ -3,7 +3,7 @@ from io import StringIO
 
 import pytest
 
-from mplugin import Runtime, Timeout, guarded, ok
+from mplugin import Timeout, _Runtime, guarded, ok
 
 
 def make_check():
@@ -23,15 +23,15 @@ def make_check():
 
 class TestRuntimeBase:
     def setup_method(self) -> None:
-        Runtime.instance = None
-        self.r = Runtime()
+        _Runtime.instance = None
+        self.r = _Runtime()
         self.r.sysexit = lambda: None
         self.r.stdout = StringIO()
 
 
 class RuntimeTest(TestRuntimeBase):
     def test_runtime_is_singleton(self) -> None:
-        assert self.r == Runtime()
+        assert self.r == _Runtime()
 
     def test_run_sets_exitcode(self) -> None:
         self.r.run(make_check())

@@ -5,12 +5,12 @@ import pytest
 import mplugin
 from mplugin import (
     Context,
-    Contexts,
     Metric,
     Resource,
     Result,
     ScalarContext,
     ServiceState,
+    _Contexts,
     critical,
     ok,
     unknown,
@@ -97,19 +97,19 @@ class TestScalarContext:
 
 class TestContexts:
     def test_keyerror(self) -> None:
-        ctx = Contexts()
+        ctx = _Contexts()
         ctx.add(Context("foo"))
         with pytest.raises(KeyError):
             ctx["bar"]
 
     def test_contains(self) -> None:
-        ctx = Contexts()
+        ctx = _Contexts()
         ctx.add(Context("foo"))
         assert "foo" in ctx
         assert "bar" not in ctx
 
     def test_iter(self) -> None:
-        ctx = Contexts()
+        ctx = _Contexts()
         ctx.add(Context("foo"))
         # includes default contexts
         assert ["default", "foo", "null"] == sorted(list(ctx))

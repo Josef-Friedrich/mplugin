@@ -677,7 +677,7 @@ class Output:
 # performance.py
 
 
-def quote(label: str) -> str:
+def _quote(label: str) -> str:
     if re.match(r"^\w+$", label):
         return label
     return f"'{label}'"
@@ -759,7 +759,7 @@ class Performance:
         Labels containing spaces or special characters will be quoted.
         """
 
-        performance: str = f"{quote(self.label)}={self.value}"
+        performance: str = f"{_quote(self.label)}={self.value}"
 
         if self.uom is not None:
             performance += self.uom
@@ -821,7 +821,7 @@ def guarded(
         # that as long as we're maintaining py27 compatability.
         # pylint: disable-next=inconsistent-return-statements
         def wrapper(*args: typing.Any, **kwds: typing.Any):
-            runtime = Runtime()
+            runtime = _Runtime()
             if verbose is not None:
                 runtime.verbose = verbose
             try:
@@ -845,7 +845,7 @@ def guarded(
     return _decorate  # type: ignore
 
 
-class Runtime:
+class _Runtime:
     instance = None
     check: typing.Optional["Check"] = None
     _verbose = 1
@@ -857,7 +857,7 @@ class Runtime:
 
     def __new__(cls) -> typing_extensions.Self:
         if not cls.instance:
-            cls.instance = super(Runtime, cls).__new__(cls)
+            cls.instance = super(_Runtime, cls).__new__(cls)
         return cls.instance
 
     def __init__(self) -> None:
@@ -1213,7 +1213,7 @@ class Result:
         )
 
 
-class Results:
+class _Results:
     """Container for result sets.
 
     Basically, this class manages a set of results and provides
@@ -1360,7 +1360,7 @@ class Summary:
     # should probably be an @abstractmethod.
     # See issue #44
     # pylint: disable-next=no-self-use
-    def ok(self, results: "Results") -> str:
+    def ok(self, results: "_Results") -> str:
         """Formats status line when overall state is ok.
 
         The default implementation returns a string representation of
@@ -1377,7 +1377,7 @@ class Summary:
     # should probably be an @abstractmethod.
     # See issue #44
     # pylint: disable-next=no-self-use
-    def problem(self, results: "Results") -> str:
+    def problem(self, results: "_Results") -> str:
         """Formats status line when overall state is not ok.
 
         The default implementation returns a string representation of te
@@ -1395,7 +1395,7 @@ class Summary:
     # should probably be an @abstractmethod.
     # See issue #44
     # pylint: disable-next=no-self-use
-    def verbose(self, results: "Results") -> list[str]:
+    def verbose(self, results: "_Results") -> list[str]:
         """Provides extra lines if verbose plugin execution is requested.
 
         The default implementation returns a list of all resources that are in
@@ -1688,7 +1688,7 @@ class ScalarContext(Context):
         )
 
 
-class Contexts:
+class _Contexts:
     """Container for collecting all generated contexts."""
 
     by_name: dict[str, Context]
@@ -1739,15 +1739,15 @@ _log = logging.getLogger(__name__)
 
 class Check:
     resources: list[Resource]
-    contexts: Contexts
+    contexts: _Contexts
     summary: Summary
-    results: Results
+    results: _Results
     perfdata: list[str]
     name: str
 
     def __init__(
         self,
-        *objects: Resource | Context | Summary | Results,
+        *objects: Resource | Context | Summary | _Results,
         name: typing.Optional[str] = None,
     ) -> None:
         """Creates and configures a check.
@@ -1759,9 +1759,9 @@ class Check:
         resource's name. If *name* is None, no prefix is set at all.
         """
         self.resources = []
-        self.contexts = Contexts()
+        self.contexts = _Contexts()
         self.summary = Summary()
-        self.results = Results()
+        self.results = _Results()
         self.perfdata = []
         if name is not None:
             self.name = name
@@ -1769,7 +1769,7 @@ class Check:
             self.name = ""
         self.add(*objects)
 
-    def add(self, *objects: Resource | Context | Summary | Results):
+    def add(self, *objects: Resource | Context | Summary | _Results):
         """Adds domain objects to a check.
 
         :param objects: one or more objects that are descendants from
@@ -1789,7 +1789,7 @@ class Check:
                 self.contexts.add(obj)
             elif isinstance(obj, Summary):
                 self.summary = obj
-            elif isinstance(obj, Results):  # type: ignore
+            elif isinstance(obj, _Results):  # type: ignore
                 self.results = obj
             else:
                 raise TypeError("cannot add type {0} to check".format(type(obj)), obj)
@@ -1848,7 +1848,7 @@ class Check:
         :param timeout: abort check execution with a :exc:`Timeout`
             exception after so many seconds (use 0 for no timeout)
         """
-        runtime = Runtime()
+        runtime = _Runtime()
         runtime.execute(self, verbose, timeout)
 
     @property

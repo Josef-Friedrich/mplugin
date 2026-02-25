@@ -14,8 +14,10 @@ class TestState:
     def test_cmp_greater(self) -> None:
         assert warn > ok
 
-    def test_worst(self) -> None:
+
+class TestWorst:
+    def test_not_empty_set(self) -> None:
         assert critical == worst([ok, critical, warn])
 
-    def test_worst_of_emptyset_is_ok(self) -> None:
+    def test_empty_set_is_ok(self) -> None:
         assert ok == worst([])

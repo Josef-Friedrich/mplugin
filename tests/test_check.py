@@ -7,11 +7,11 @@ from mplugin import (
     Metric,
     Resource,
     Result,
-    Results,
-    Runtime,
     ScalarContext,
     ServiceState,
     Summary,
+    _Results,
+    _Runtime,  # type: ignore
     critical,
     ok,
     unknown,
@@ -50,7 +50,7 @@ class TestCheck:
         assert s == c.summary
 
     def test_add_results(self) -> None:
-        r = Results()
+        r = _Results()
         c = Check(r)
         assert r == c.results
 
@@ -181,7 +181,7 @@ class TestCheck:
             assert 2 == verbose
             assert 20 == timeout
 
-        r = Runtime()
+        r = _Runtime()
         r.execute = fake_execute
         Check().main(2, 20)
 
