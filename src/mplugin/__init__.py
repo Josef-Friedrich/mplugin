@@ -691,7 +691,7 @@ class _Output:
         out = " ".join(check.perfdata)
         return "| " + self._screen_chars(out, "perfdata")
 
-    def add_longoutput(self, text: str | list[str] | tuple[str]) -> None:
+    def add_longoutput(self, text: str | list[str] | tuple[str, ...]) -> None:
         if isinstance(text, (list, tuple)):
             for line in text:
                 self.add_longoutput(line)
@@ -848,9 +848,9 @@ R = typing.TypeVar("R")
 
 
 def guarded(
-    original_function: typing.Optional[typing.Callable[P, R]] = None,
-    verbose: typing.Optional[int] = None,
-) -> typing.Callable[P, R]:
+    original_function: typing.Any = None,
+    verbose: typing.Any = None,
+) -> typing.Any:
     """Runs a function mplugin's Runtime environment.
 
     `guarded` makes the decorated function behave correctly with respect
@@ -899,18 +899,18 @@ def guarded(
 
 
 class _Runtime:
-    instance = None
+    instance: typing.Optional[typing_extensions.Self] = None  # type: ignore
     check: typing.Optional["Check"] = None
     _verbose = 1
     timeout: typing.Optional[int] = None
     logchan: logging.StreamHandler[io.StringIO]
     output: _Output
-    stdout = None
+    stdout: typing.Optional[io.StringIO] = None
     exitcode: int = 70  # EX_SOFTWARE
 
     def __new__(cls) -> typing_extensions.Self:
         if not cls.instance:
-            cls.instance = super(_Runtime, cls).__new__(cls)
+            cls.instance: typing_extensions.Self = super(_Runtime, cls).__new__(cls)
         return cls.instance
 
     def __init__(self) -> None:

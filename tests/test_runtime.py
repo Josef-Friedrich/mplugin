@@ -1,13 +1,14 @@
 import logging
 from io import StringIO
+from typing import Any, NoReturn, cast
 
 import pytest
 
-from mplugin import Timeout, _Runtime, guarded, ok
+from mplugin import Check, Timeout, _Runtime, guarded, ok  # type: ignore
 
 
-def make_check():
-    class Check:
+def make_check() -> Check:
+    class FakeCheck:
         summary_str = "summary"
         verbose_str = "long output"
         name = "check"
@@ -18,18 +19,20 @@ def make_check():
         def __call__(self) -> None:
             pass
 
-    return Check()
+    return cast(Check, FakeCheck())
 
 
 class TestRuntimeBase:
+    r: _Runtime
+
     def setup_method(self) -> None:
-        _Runtime.instance = None
+        _Runtime.instance = None  # type: ignore
         self.r = _Runtime()
-        self.r.sysexit = lambda: None
-        self.r.stdout = StringIO()
+        self.r.sysexit = lambda: None  # type: ignore
+        self.r.stdout = StringIO()  # type: ignore
 
 
-class RuntimeTest(TestRuntimeBase):
+class TestRuntime(TestRuntimeBase):
     def test_runtime_is_singleton(self) -> None:
         assert self.r == _Runtime()
 
@@ -38,7 +41,7 @@ class RuntimeTest(TestRuntimeBase):
         assert 0 == self.r.exitcode
 
     def test_verbose(self) -> None:
-        testcases = [
+        testcases: list[tuple[Any, int, int]] = [
             (None, logging.WARNING, 0),
             (1, logging.WARNING, 1),
             ("vv", logging.INFO, 2),
@@ -50,44 +53,48 @@ class RuntimeTest(TestRuntimeBase):
             assert exp_level == self.r.logchan.level
             assert exp_verbose == self.r.verbose
 
-    def test_execute_uses_defaults(self):
+    def test_execute_uses_defaults(self) -> NoReturn:
         self.r.execute(make_check())
         assert 1 == self.r.verbose
         assert None is self.r.timeout
 
-    def test_execute_sets_verbose_and_timeout(self):
+    def test_execute_sets_verbose_and_timeout(self) -> NoReturn:
         self.r.execute(make_check(), 2, 10)
         assert 2 == self.r.verbose
         assert 10 == self.r.timeout
 
 
-class RuntimeExceptionTest(TestRuntimeBase):
+class TestRuntimeException(TestRuntimeBase):
     def setup_method(self) -> None:
-        super(RuntimeExceptionTest, self).setUp()
+        super().setup_method()
 
-    def run_main_with_exception(self, exc):
+    def run_main_with_exception(self, exc: Exception) -> None:
         @guarded
-        def main():
+        def main() -> NoReturn:
             raise exc
 
         main()
 
-    def test_handle_exception_set_exitcode_and_formats_output(self):
+    def test_handle_exception_set_exitcode_and_formats_output(self) -> None:
         self.run_main_with_exception(RuntimeError("problem"))
         assert 3 == self.r.exitcode
+        assert self.r.stdout
         assert "UNKNOWN: RuntimeError: problem" in self.r.stdout.getvalue()
 
-    def test_handle_exception_prints_no_traceback(self):
+    def test_handle_exception_prints_no_traceback(self) -> None:
         self.r.verbose = 0
         self.run_main_with_exception(RuntimeError("problem"))
+        assert self.r.stdout
         assert "Traceback" not in self.r.stdout.getvalue()
 
-    def test_handle_exception_verbose_default(self):
+    def test_handle_exception_verbose_default(self) -> None:
         self.run_main_with_exception(RuntimeError("problem"))
+        assert self.r.stdout
         assert "Traceback" in self.r.stdout.getvalue()
 
-    def test_handle_timeout_exception(self):
+    def test_handle_timeout_exception(self) -> None:
         self.run_main_with_exception(Timeout("1s"))
+        assert self.r.stdout
         assert (
             "UNKNOWN: Timeout: check execution aborted after 1s"
             in self.r.stdout.getvalue()

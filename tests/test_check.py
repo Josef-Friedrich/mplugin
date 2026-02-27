@@ -19,10 +19,10 @@ from mplugin import (
 
 
 class FakeSummary(Summary):
-    def ok(self, results):
+    def ok(self, results: Results):
         return "I'm feelin' good"
 
-    def problem(self, results):
+    def problem(self, results: Results):
         return "Houston, we have a problem"
 
 
@@ -70,7 +70,7 @@ class TestCheck:
 
     def test_evaluate_resource_populates_results_perfdata(self) -> None:
         c = Check()
-        c._evaluate_resource(R1_MetricDefaultContext())
+        c._evaluate_resource(R1_MetricDefaultContext())  # type: ignore
         assert 1 == len(c.results)
         assert c.results[0].metric
         assert "foo" == c.results[0].metric.name
@@ -83,7 +83,7 @@ class TestCheck:
 
         ctx = ScalarContext("bar", "1", "1")
         c = Check(ctx)
-        c._evaluate_resource(R2_MetricCustomContext())
+        c._evaluate_resource(R2_MetricCustomContext())  # type: ignore
         assert c.results[0].metric
         assert c.results[0].metric.contextobj == ctx
 
@@ -93,7 +93,7 @@ class TestCheck:
                 raise CheckError("problem")
 
         c = Check()
-        c._evaluate_resource(R3_Faulty())
+        c._evaluate_resource(R3_Faulty())  # type: ignore
         result = c.results[0]
         assert unknown == result.state
         assert "problem" == result.hint
@@ -168,7 +168,7 @@ class TestCheck:
 
     def test_summary_str_calls_ok_if_state_ok(self) -> None:
         c = Check(FakeSummary())
-        c._evaluate_resource(R1_MetricDefaultContext())
+        c._evaluate_resource(R1_MetricDefaultContext())  # type: ignore
         assert "I'm feelin' good" == c.summary_str
 
     def test_summary_str_calls_problem_if_state_not_ok(self) -> None:
