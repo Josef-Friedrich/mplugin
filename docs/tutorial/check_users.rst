@@ -185,7 +185,7 @@ uncaught exception.
 Verbosity levels of 2 and 3 enable logging with *info* or *debug* levels.
 
 This behaviour conforms to the "Verbose output" suggestions found in the
-`Nagios plug-in development guidelines`_.
+`Monitoring plug-in development guidelines`_.
 
 The initial verbosity level is 1 (multi-line output). This means that tracebacks
 are printed for uncaught exceptions raised in the initialization phase (before
@@ -236,6 +236,6 @@ correctly.
 
 .. _logging: http://docs.python.org/3/library/logging.html
 
-.. _Nagios plug-in development guidelines: http://nagiosplug.sourceforge.net/developer-guidelines.html#AEN39
+.. _Monitoring plug-in development guidelines: https://www.monitoring-plugins.org/doc/guidelines.html
 
 .. vim: set spell spelllang=en:

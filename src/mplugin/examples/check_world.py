@@ -1,6 +1,6 @@
 #!python
 
-"""Hello world Nagios check."""
+"""Hello world monitoring check."""
 
 import mplugin
 

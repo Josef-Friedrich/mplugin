@@ -2,7 +2,7 @@
 [project]
 name = "mplugin"
 version = "2.0.0a0"
-description = "Class library for writing Nagios (Icinga) plugins"
+description = "Class library for writing monitoring (Nagios/Icinga) plugins"
 authors = [
     { name = "Christian Kauhaus", email = "kc@flyingcircus.io" },
     { name = "Matthew Pounsett", email = "matt@conundrum.com" },
@@ -50,7 +50,7 @@ Documentation = "https://mplugin.readthedocs.io/"
 Download = "https://pypi.org/project/mplugin/"
 Source = "https://github.com/Josef-Friedrich/mplugin"
 Issues = "https://github.com/Josef-Friedrich/mplugin/issues"
-Changelog = "https://github.com/Josef-Friedrich/mplugin/blob/main/HISTORY.txt"
+Changelog = "https://github.com/Josef-Friedrich/mplugin/blob/main/CHANGELOG.rst"
 
 [tool.ruff]
 

@@ -1,5 +1,5 @@
 #!python
-"""Nagios/Icinga plugin to check system load."""
+"""Monitoring plugin to check system load."""
 
 import argparse
 import logging

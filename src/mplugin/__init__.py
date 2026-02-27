@@ -57,7 +57,7 @@ class Timeout(RuntimeError):
 """Classes  to represent check outcomes.
 
 This module defines :class:`ServiceState` which is the abstract base class
-for check outcomes. The four states defined by the :term:`Nagios plugin API`
+for check outcomes. The four states defined by the :term:`Monitoring plugin API`
 are represented as singleton subclasses.
 
 Note that the *warning* state is defined by the :class:`Warn` class. The
@@ -130,7 +130,7 @@ class __Warn(ServiceState):
         super().__init__(1, "warning")
 
 
-# According to the Nagios development guidelines, this should be Warning,
+# According to the monitoring development guidelines, this should be Warning,
 # not Warn, but renaming the class would occlude the built-in Warning
 # exception class.
 warn = __Warn()
@@ -854,9 +854,9 @@ def guarded(
     """Runs a function mplugin's Runtime environment.
 
     `guarded` makes the decorated function behave correctly with respect
-    to the Nagios plugin API if it aborts with an uncaught exception or
+    to the monitoring plugin API if it aborts with an uncaught exception or
     a timeout. It exits with an *unknown* exit code and prints a
-    traceback in a format acceptable by Nagios.
+    traceback in a format acceptable by monitoring solution.
 
     This function should be used as a decorator for the script's `main`
     function.
@@ -1945,7 +1945,7 @@ class Check:
 
     @property
     def exitcode(self) -> int:
-        """Overall check exit code according to the Nagios API.
+        """Overall check exit code according to the monitoring API.
 
         Corresponds with :attr:`state`. Read-only property.
         """
@@ -2055,15 +2055,15 @@ def convert_timespan_to_seconds(timespan: typing.Union[str, int, float]) -> floa
 
     The following time units are understood:
 
-    - usec, us, μs
-    - msec, ms
-    - seconds, second, sec, s
-    - minutes, minute, min, m
-    - hours, hour, hr, h
-    - days, day, d
-    - weeks, week, w
-    - months, month, M (defined as 30.44 days)
-    - years, year, y (defined as 365.25 days)
+    - ``years``, ``year``, ``y`` (defined as ``365.25`` days)
+    - ``months``, ``month``, ``M`` (defined as ``30.44`` days)
+    - ``weeks``, ``week``, ``w``
+    - ``days``, ``day``, ``d``
+    - ``hours``, ``hour``, ``hr``, ``h``
+    - ``minutes``, ``minute``, ``min``, ``m``
+    - ``seconds``, ``second``, ``sec``, ``s``
+    - ``msec``, ``ms``
+    - ``usec``, ``us``, ``μs``
 
     :param timespan: for example ``2.345s`` or ``3min 45.234s`` or
       ``34min`` or ``2 months 8 days``

@@ -9,7 +9,7 @@ In this tutorial, we will discuss important basic features that are present in
 nearly every check. These include command line processing, metric evaluation
 with scalar contexts, status line formatting and logging.
 
-The :program:`check_load` plugin resembles the one found in the standard Nagios
+The :program:`check_load` plugin resembles the one found in the standard monitoring
 plugins collection. It allows to check the system load average against
 thresholds.
 
@@ -99,7 +99,7 @@ This version of :program:`check_load` is already functional:
 In the first invocation (lines 1--3), :program:`check_load` reports only the
 first load value which looks bit arbitrary. In the second invocation (lines
 5--8), we set a critical threshold. The range specification is parsed
-automatically according to the :term:`Nagios plugin API` and the first metric
+automatically according to the :term:`Monitoring plugin API` and the first metric
 that lies outside is reported. In the third invocation (lines 10--12), we
 request normalization and all values fit in the range this time.
 
@@ -151,7 +151,7 @@ our specialized `Load` and `LoadSummary` classes go in.
 We did not specialize a :class:`~mplugin.context.Context` class to evaluate
 the load metrics. Instead, we use the supplied
 :class:`~mplugin.context.ScalarContext` which compares a scalar value
-against two ranges according to the range syntax defined by the Nagios plugin
+against two ranges according to the range syntax defined by the monitoring plugin
 API. The default :class:`~mplugin.context.ScalarContext`
 implementation covers the majority of evaluation needs. Checks using non-scalar
 metrics or requiring special logic should subclass

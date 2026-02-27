@@ -17,10 +17,10 @@ About
 
 **mplugin** is a Python class library which helps writing Nagios or Icinga
 compatible plugins easily in Python. It cares for much of the boilerplate code
-and default logic commonly found in Nagios checks, including:
+and default logic commonly found in monitoring checks, including:
 
-- Nagios 3 Plugin API compliant parameters and output formatting
-- Full Nagios range syntax support
+- Monitoring Plugin API compliant parameters and output formatting
+- Full monitoring range syntax support
 - Automatic threshold checking
 - Multiple independend measures
 - Custom status line to communicate the main point quickly

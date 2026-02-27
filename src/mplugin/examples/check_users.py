@@ -1,5 +1,5 @@
 #!python
-"""Nagios plugin to check number of logged in users."""
+"""Monitoring plugin to check number of logged in users."""
 
 import argparse
 import logging
