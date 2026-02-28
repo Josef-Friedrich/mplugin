@@ -2125,7 +2125,7 @@ def setup_argparser(
     return parser
 
 
-def convert_timespan_to_seconds(timespan: typing.Union[str, int, float]) -> float:
+def timespan(spec: typing.Union[str, int, float]) -> float:
     """Convert a timespan format string to seconds.
     If no time unit is specified, generally seconds are assumed.
 
@@ -2151,23 +2151,24 @@ def convert_timespan_to_seconds(timespan: typing.Union[str, int, float]) -> floa
             type=convert_timespan_to_seconds,
         )
 
-    :param timespan: for example ``2.345s`` or ``3min 45.234s`` or
-      ``34min`` or ``2 months 8 days``
+    :param timespan: The specification of the timespan as a string, for example
+      ``2.345s``, ``3min 45.234s``, ``34min``, ``2 months 8 days`` or as a
+      number.
 
     :return: The timespan in seconds
     """
 
     # A int or a float encoded as string without an extension
     try:
-        timespan = float(timespan)
+        spec = float(spec)
     except ValueError:
         pass
 
-    if isinstance(timespan, int) or isinstance(timespan, float):
-        return timespan
+    if isinstance(spec, int) or isinstance(spec, float):
+        return spec
 
     # Remove all whitespaces
-    timespan = re.sub(r"\s+", "", timespan)
+    spec = re.sub(r"\s+", "", spec)
 
     replacements: list[tuple[list[str], str]] = [
         (["years", "year"], "y"),
@@ -2183,10 +2184,10 @@ def convert_timespan_to_seconds(timespan: typing.Union[str, int, float]) -> floa
 
     for replacement in replacements:
         for r in replacement[0]:
-            timespan = timespan.replace(r, replacement[1])
+            spec = spec.replace(r, replacement[1])
 
     # Add a whitespace after the units
-    timespan = re.sub(r"([a-zA-Z]+)", r"\1 ", timespan)
+    spec = re.sub(r"([a-zA-Z]+)", r"\1 ", spec)
 
     seconds: dict[str, float] = {
         "y": 31557600,  # 365.25 days
@@ -2201,7 +2202,7 @@ def convert_timespan_to_seconds(timespan: typing.Union[str, int, float]) -> floa
     }
     result: float = 0
     # Split on the whitespaces
-    for span in timespan.split():
+    for span in spec.split():
         match = re.search(r"([\d\.]+)([a-zA-Z]+)", span)
         if match:
             value = match.group(1)
