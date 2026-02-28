@@ -1,4 +1,5 @@
-#! python
+#! /usr/bin/env python
+
 """Monitoring plugin to check number of logged in users."""
 
 import argparse

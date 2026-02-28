@@ -1833,7 +1833,25 @@ class _Contexts:
 """
 
 
-_log = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
+"""
+**mplugin** integrates with the logging module from Python's standard
+library. If the main function is decorated with `guarded` (which is heavily
+recommended), the logging module gets automatically configured before the
+execution of the `main()` function starts. Messages logged to the *mplugin*
+logger (or any sublogger) are processed with mplugin's integrated logging.
+
+The verbosity level is set in the :meth:`check.main()` invocation depending on
+the number of "-v" flags.
+
+When called with *verbose=0,* both the summary and the performance data are
+printed on one line and the warning message is displayed. Messages logged with
+*warning* or *error* level are always printed.
+Setting *verbose* to 1 does not change the logging level but enable multi-line
+output. Additionally, full tracebacks would be printed in the case of an
+uncaught exception.
+Verbosity levels of 2 and 3 enable logging with *info* or *debug* levels.
+"""
 
 
 class Check:
@@ -1912,7 +1930,7 @@ class Check:
         try:
             metrics = resource.probe()
             if not metrics:
-                _log.warning("resource %s did not produce any metric", resource.name)
+                log.warning("resource %s did not produce any metric", resource.name)
             if isinstance(metrics, Metric):
                 # resource returned a bare metric instead of list/generator
                 metrics = [metrics]

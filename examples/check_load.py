@@ -1,4 +1,5 @@
-#!python
+#! /usr/bin/env python
+
 """Monitoring plugin to check system load."""
 
 import argparse
