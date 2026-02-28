@@ -1004,8 +1004,6 @@ class _Runtime:
 # metric.py
 
 """Structured representation for data points.
-
-
 """
 
 
@@ -2140,8 +2138,18 @@ def convert_timespan_to_seconds(timespan: typing.Union[str, int, float]) -> floa
     - ``hours``, ``hour``, ``hr``, ``h``
     - ``minutes``, ``minute``, ``min``, ``m``
     - ``seconds``, ``second``, ``sec``, ``s``
-    - ``msec``, ``ms``
-    - ``usec``, ``us``, ``μs``
+    - ``milliseconds``, ``millisecond``, ``msec``, ``ms``
+    - ``microseconds``,  ``microsecond``, ``usec``, ``μs``, ``μ``, ``us``
+
+    .. code-block:: python
+
+        parser.add_argument(
+            "-c",
+            "--critical",
+            default=5356800,
+            help="Interval in seconds for critical state.",
+            type=convert_timespan_to_seconds,
+        )
 
     :param timespan: for example ``2.345s`` or ``3min 45.234s`` or
       ``34min`` or ``2 months 8 days``
@@ -2169,8 +2177,8 @@ def convert_timespan_to_seconds(timespan: typing.Union[str, int, float]) -> floa
         (["hours", "hour", "hr"], "h"),
         (["minutes", "minute", "min"], "m"),
         (["seconds", "second", "sec"], "s"),
-        (["msec"], "ms"),
-        (["usec", "μs", "μ"], "us"),
+        (["milliseconds", "millisecond", "msec"], "ms"),
+        (["microseconds", "microsecond", "usec", "μs", "μ"], "us"),
     ]
 
     for replacement in replacements:
@@ -2202,49 +2210,29 @@ def convert_timespan_to_seconds(timespan: typing.Union[str, int, float]) -> floa
     return result
 
 
-class TimespanAction(argparse.Action):
-    """
-    Custom argparse action for converting timespan strings to seconds.
+TIMESPAN_FORMAT_HELP = """
+Timespan format
+---------------
 
-    This action allows command-line arguments to accept human-readable timespan
-    formats (e.g., "1d", "2h", "30m", "45s") and automatically converts them to
-    their equivalent duration in seconds.
+If no time unit is specified, generally seconds are assumed.
 
-    :raises ValueError: If nargs is specified during initialization, as this action
-                        does not support multiple values.
-    :raises ValueError: If the provided value is not a string during parsing.
+The following time units are understood:
 
-    Example usage:
+- years, year, y (defined as 365.25 days)
+- months, month, M (defined as 30.44 days)
+- weeks, week, w
+- days, day, d
+- hours, hour, hr, h
+- minutes, minute, min, m
+- seconds, second, sec, s
+- milliseconds, millisecond, msec, ms
+- microseconds,  microsecond, usec, μs, μ, us
 
-    .. code-block:: python
+Examples
+--------
 
-        parser.add_argument(
-            "-c",
-            "--critical",
-            default=5356800,
-            help="Interval in seconds for critical state.",
-            action=TimeSpanAction,
-        )
-    """
-
-    def __init__(
-        self,
-        option_strings: list[str],
-        dest: str,
-        nargs: typing.Optional[str] = None,
-        **kwargs: typing.Any,
-    ) -> None:
-        if nargs is not None:
-            raise ValueError("nargs not allowed")
-        super().__init__(option_strings, dest, **kwargs)
-
-    def __call__(
-        self,
-        parser: argparse.ArgumentParser,
-        namespace: argparse.Namespace,
-        values: typing.Optional[typing.Union[str, typing.Sequence[typing.Any]]],
-        option_string: typing.Optional[str] = None,
-    ) -> None:
-        if not isinstance(values, str):
-            raise ValueError("Only strings are allowed")
-        setattr(namespace, self.dest, convert_timespan_to_seconds(values))
+- `2.345s`
+- `3min 45.234s`
+- `34min`
+- `2 months 8 days`
+"""

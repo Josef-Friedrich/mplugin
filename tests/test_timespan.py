@@ -1,5 +1,7 @@
 """Test the function convert_timespan_to_seconds"""
 
+import argparse
+
 from mplugin import convert_timespan_to_seconds as convert  # type: ignore
 
 
@@ -91,3 +93,40 @@ def test_decimal_values() -> None:
     """Test conversion with decimal values."""
     assert convert("1.5h") == 5400
     assert convert("2.5d") == 216000
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--timeout", type=convert)
+
+
+class TestAsArgparserType:
+    def test_seconds(self) -> None:
+        """Test TimeSpanAction with seconds."""
+
+        args = parser.parse_args(["--timeout", "5s"])
+        assert args.timeout == 5
+
+    def test_minutes(self) -> None:
+        """Test TimeSpanAction with minutes."""
+        args = parser.parse_args(["--timeout", "2min"])
+        assert args.timeout == 120
+
+    def test_hours(self) -> None:
+        """Test TimeSpanAction with hours."""
+        args = parser.parse_args(["--timeout", "1h"])
+        assert args.timeout == 3600
+
+    def test_combined(self) -> None:
+        """Test TimeSpanAction with combined timespan."""
+        args = parser.parse_args(["--timeout", "1h30m"])
+        assert args.timeout == 5400
+
+    def test_float(self) -> None:
+        """Test TimeSpanAction with float value."""
+        args = parser.parse_args(["--timeout", "1.5h"])
+        assert args.timeout == 5400
+
+    def test_with_spaces(self) -> None:
+        """Test TimeSpanAction with spaces."""
+        args = parser.parse_args(["--timeout", "2 hours 30 minutes"])
+        assert args.timeout == 9000
