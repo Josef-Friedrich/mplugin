@@ -1,5 +1,6 @@
 import io
 import sys
+import typing
 from contextlib import redirect_stderr, redirect_stdout
 from unittest import mock
 
@@ -7,10 +8,10 @@ from mplugin import critical
 from mplugin.testing import MockResult
 
 
-def test_mock_result():
+def test_mock_result() -> typing.NoReturn:
 
-    file_stdout: io.StringIO = io.StringIO()
-    file_stderr: io.StringIO = io.StringIO()
+    file_stdout = io.StringIO()
+    file_stderr = io.StringIO()
 
     with (
         mock.patch("sys.exit") as sys_exit,

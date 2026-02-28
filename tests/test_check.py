@@ -1,3 +1,5 @@
+from typing import Optional
+
 import pytest
 
 from mplugin import (
@@ -100,12 +102,18 @@ class TestCheck:
 
     def test_call_evaluates_resources_and_compacts_perfdata(self) -> None:
         class R4_NoPerfdata(Resource):
-            def probe(self):
+            def probe(self) -> list[Metric]:
                 return [Metric("m4", 4, context="null")]
 
         c = Check(R1_MetricDefaultContext(), R4_NoPerfdata())
         c()
-        assert ["foo", "m4"] == [res.metric.name for res in c.results]
+
+        metric_names: list[str] = []
+        for res in c.results:
+            if res.metric is not None:
+                metric_names.append(res.metric.name)
+
+        assert ["foo", "m4"] == metric_names
         assert ["foo=1"] == c.perfdata
 
     def test_evaluate_bare_state_is_autowrapped_in_result(self) -> None:
@@ -116,7 +124,7 @@ class TestCheck:
                 return [metric]
 
         class BareStateContext(Context):
-            def evaluate(self, metric, resource) -> ServiceState:
+            def evaluate(self, metric: Metric, resource: Resource) -> ServiceState:
                 return ok
 
         c = Check(R5_DefaultMetric(), BareStateContext("m5"))
@@ -145,7 +153,7 @@ class TestCheck:
         )
         c()
         assert "über 8 (outside range 1:1)" == c.summary_str
-        ["warning: über 8 (outside range 1:1)"] == c.verbose_str
+        assert ["warning: über 8 (outside range 1:1)"] == c.verbose_str
 
     def test_set_explicit_name(self) -> None:
         c = Check()
@@ -176,13 +184,15 @@ class TestCheck:
         c.results.add(Result(critical))
         assert "Houston, we have a problem" == c.summary_str
 
-    def test_execute(self):
-        def fake_execute(_runtime_obj, verbose, timeout) -> None:
+    def test_execute(self) -> None:
+        def fake_execute(
+            check: Check, verbose: Optional[int] = None, timeout: Optional[int] = None
+        ) -> None:
             assert 2 == verbose
             assert 20 == timeout
 
         r = _Runtime()
-        r.execute = fake_execute
+        r.execute = fake_execute  # type: ignore
         Check().main(2, 20)
 
     def test_verbose_str(self) -> None:

@@ -465,6 +465,8 @@ class Cookie(UserDict[str, typing.Any]):
 
     path: typing.Optional[str]
 
+    fobj: typing.Optional[io.TextIOWrapper]
+
     def __init__(self, statefile: typing.Optional[str] = None) -> None:
 
         super(Cookie, self).__init__()
@@ -518,7 +520,7 @@ class Cookie(UserDict[str, typing.Any]):
                 raise
         return self
 
-    def _create_fobj(self):
+    def _create_fobj(self) -> io.TextIOWrapper:
         if not self.path:
             return TemporaryFile(
                 "w+", encoding="ascii", prefix="oblivious_cookie_", dir=None
