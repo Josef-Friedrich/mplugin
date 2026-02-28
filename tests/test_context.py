@@ -14,7 +14,7 @@ from mplugin import (
     critical,
     ok,
     unknown,
-    warn,
+    warning,
 )
 
 
@@ -44,7 +44,7 @@ class MyContext(Context):
         if metric.value == 2:
             return self.critical(hint="2 is critical", metric=metric)
         if metric.value == 1:
-            return self.warn(hint="1 is warn", metric=metric)
+            return self.warning(hint="1 is warn", metric=metric)
         return self.ok(hint="is ok", metric=metric)
 
 
@@ -63,7 +63,7 @@ class TestSubclassesContext:
 
     def test_warn(self) -> None:
         result: Result = self.evaluate(1)
-        assert result.state == warn
+        assert result.state == warning
         assert result.hint == "1 is warn"
 
     def test_critical(self) -> None:
@@ -81,7 +81,7 @@ class TestScalarContext:
     def test_state_ranges_values(self) -> None:
         test_cases: list[tuple[int, ServiceState, Optional[str]]] = [
             (1, mplugin.ok, None),
-            (3, mplugin.warn, "outside range 0:2"),
+            (3, mplugin.warning, "outside range 0:2"),
             (5, mplugin.critical, "outside range 0:4"),
         ]
         c = ScalarContext("ctx", "0:2", "0:4")

@@ -1,4 +1,4 @@
-from mplugin import critical, ok, unknown, warn, worst
+from mplugin import critical, ok, unknown, warning, worst
 
 
 class TestState:
@@ -9,15 +9,15 @@ class TestState:
         assert 3 == int(unknown)
 
     def test_cmp_less(self) -> None:
-        assert warn < critical
+        assert warning < critical
 
     def test_cmp_greater(self) -> None:
-        assert warn > ok
+        assert warning > ok
 
 
 class TestWorst:
     def test_not_empty_set(self) -> None:
-        assert critical == worst([ok, critical, warn])
+        assert critical == worst([ok, critical, warning])
 
     def test_empty_set_is_ok(self) -> None:
         assert ok == worst([])

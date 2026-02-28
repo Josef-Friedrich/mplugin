@@ -9,7 +9,7 @@ from mplugin import (
     critical,
     ok,
     unknown,
-    warn,
+    warning,
 )
 
 
@@ -31,16 +31,16 @@ class TestResult:
         assert Result(ok, metric=m).context == ctx
 
     def test_str_metric_with_hint(self) -> None:
-        assert "2 (unexpected)" == str(Result(warn, "unexpected", Metric("foo", 2)))
+        assert "2 (unexpected)" == str(Result(warning, "unexpected", Metric("foo", 2)))
 
     def test_str_metric_only(self) -> None:
-        assert "3" == str(Result(warn, metric=Metric("foo", 3)))
+        assert "3" == str(Result(warning, metric=Metric("foo", 3)))
 
     def test_str_hint_only(self) -> None:
-        assert "how come?" == str(Result(warn, "how come?"))
+        assert "how come?" == str(Result(warning, "how come?"))
 
     def test_str_empty(self) -> None:
-        assert "" == str(Result(warn))
+        assert "" == str(Result(warning))
 
 
 class TestResults:
@@ -63,8 +63,8 @@ class TestResults:
 
     def test_iterate_in_order_of_descending_states(self) -> None:
         r = Results()
-        r.add(Result(warn), Result(ok), Result(critical), Result(warn))
-        assert [critical, warn, warn, ok] == [result.state for result in r]
+        r.add(Result(warning), Result(ok), Result(critical), Result(warning))
+        assert [critical, warning, warning, ok] == [result.state for result in r]
 
     def test_most_significant_state_shoud_raise_valueerror_if_empty(self):
         with pytest.raises(ValueError):
@@ -76,7 +76,7 @@ class TestResults:
         assert ok == r.most_significant_state
         r.add(Result(critical))
         assert critical == r.most_significant_state
-        r.add(Result(warn))
+        r.add(Result(warning))
         assert critical == r.most_significant_state
 
     def test_most_significant_should_return_empty_set_if_empty(self) -> None:
@@ -84,8 +84,8 @@ class TestResults:
 
     def test_most_signigicant(self) -> None:
         r = Results()
-        r.add(Result(ok), Result(warn), Result(ok), Result(warn))
-        assert [warn, warn] == [result.state for result in r.most_significant]
+        r.add(Result(ok), Result(warning), Result(ok), Result(warning))
+        assert [warning, warning] == [result.state for result in r.most_significant]
 
     def test_first_significant(self) -> None:
         r = Results()

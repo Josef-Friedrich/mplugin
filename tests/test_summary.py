@@ -1,4 +1,4 @@
-from mplugin import Result, Results, Summary, critical, ok, warn
+from mplugin import Result, Results, Summary, critical, ok, warning
 
 
 class TestSummary:
@@ -21,6 +21,6 @@ class TestSummary:
             Results(
                 Result(critical, "reason1"),
                 Result(ok, "ignore"),
-                Result(warn, "reason2"),
+                Result(warning, "reason2"),
             )
         )

@@ -80,8 +80,11 @@ class ServiceState:
     """
 
     code: int
+    """The Plugin API compliant exit code."""
 
     text: str
+    """The short text representation which is printed for example at the
+    beginning of the summary line."""
 
     def __init__(self, code: int, text: str) -> None:
         self.code = code
@@ -92,7 +95,7 @@ class ServiceState:
         return self.text
 
     def __int__(self) -> int:
-        """Plugin API compliant exit code."""
+        """The Plugin API compliant exit code."""
         return self.code
 
     def __gt__(self, other: typing.Any) -> bool:
@@ -121,19 +124,20 @@ class __Ok(ServiceState):
         super().__init__(0, "ok")
 
 
-ok = __Ok()
-"""The plugin was able to check the service and it appeared to be functioning properly"""
+ok: ServiceState = __Ok()
+"""The plugin was able to check the service and it appeared to be functioning
+properly."""
 
 
-class __Warn(ServiceState):
+class __Warning(ServiceState):
     def __init__(self) -> None:
         super().__init__(1, "warning")
 
 
-# According to the monitoring development guidelines, this should be Warning,
-# not Warn, but renaming the class would occlude the built-in Warning
-# exception class.
-warn = __Warn()
+warning: ServiceState = __Warning()
+"""
+The plugin was able to check the service, but it appeared to be above some
+``warning`` threshold or did not appear to be working properly."""
 
 
 class __Critical(ServiceState):
@@ -141,7 +145,9 @@ class __Critical(ServiceState):
         super().__init__(2, "critical")
 
 
-critical = __Critical()
+critical: ServiceState = __Critical()
+"""The plugin detected that either the service was not running or it was above
+some ``critical`` threshold."""
 
 
 class __Unknown(ServiceState):
@@ -149,7 +155,14 @@ class __Unknown(ServiceState):
         super().__init__(3, "unknown")
 
 
-unknown = __Unknown()
+unknown: ServiceState = __Unknown()
+"""Invalid command line arguments were supplied to the plugin or low-level
+failures internal to the plugin (such as unable to fork, or open a tcp socket)
+that prevent it from performing the specified operation. Higher-level errors
+(such as name resolution errors, socket timeouts, etc) are outside of the control
+of plugins and should generally NOT be reported as ``unknown`` states.
+
+The --help or --version output should also result in ``unknown`` state."""
 
 
 def state(exit_code: int) -> ServiceState:
@@ -165,7 +178,7 @@ def state(exit_code: int) -> ServiceState:
     if exit_code == 0:
         return ok
     elif exit_code == 1:
-        return warn
+        return warning
     elif exit_code == 2:
         return critical
     elif exit_code == 3:
@@ -1177,6 +1190,30 @@ class Resource:
         This is the only method called by the check controller.
         It should trigger all necessary actions and create metrics.
 
+        A plugin can perform several measurements at once.
+
+        .. code-block:: Python
+
+            def probe(self):
+                self.users = self.list_users()
+                self.unique_users = set(self.users)
+                return [
+                    Metric("total", len(self.users), min=0, context="users"),
+                    Metric("unique", len(self.unique_users), min=0, context="users"),
+                ]
+
+        Alternatively, the probe() method can act as generator and yield metrics:
+
+        .. code-block:: Python
+
+            def probe(self):
+                self.users = self.list_users()
+                self.unique_users = set(self.users)
+                yield Metric('total', len(self.users), min=0,
+                                        context='users')
+                yield Metric('unique', len(self.unique_users), min=0,
+                                        context='users')]
+
         :return: list of :class:`~mplugin.Metric` objects,
             or generator that emits :class:`~mplugin.Metric`
             objects, or single :class:`~mplugin.Metric`
@@ -1547,30 +1584,6 @@ class Context:
         in all cases. Plugin authors may override this method in
         subclasses to specialize behaviour.
 
-        A plugin can perform several measurements at once.
-
-        .. code-block:: Python
-
-            def probe(self):
-                self.users = self.list_users()
-                self.unique_users = set(self.users)
-                return [
-                    Metric("total", len(self.users), min=0, context="users"),
-                    Metric("unique", len(self.unique_users), min=0, context="users"),
-                ]
-
-        Alternatively, the probe() method can act as generator and yield metrics:
-
-        .. code-block:: Python
-
-            def probe(self):
-                self.users = self.list_users()
-                self.unique_users = set(self.users)
-                yield mplugin.Metric('total', len(self.users), min=0,
-                                        context='users')
-                yield mplugin.Metric('unique', len(self.unique_users), min=0,
-                                        context='users')]
-
         :param metric: associated metric that is to be evaluated
         :param resource: resource that produced the associated metric
             (may optionally be consulted)
@@ -1584,20 +1597,44 @@ class Context:
         hint: typing.Optional[str] = None,
         metric: typing.Optional["Metric"] = None,
     ) -> Result:
+        """
+        Create a successful Result.
+
+        :param hint: Optional hint message providing additional context about the successful operation.
+        :param metric: Optional Metric object associated with this result.
+
+        :return: A Result object representing a successful operation.
+        """
         return Result(ok, hint=hint, metric=metric)
 
-    def warn(
+    def warning(
         self,
         hint: typing.Optional[str] = None,
         metric: typing.Optional["Metric"] = None,
     ) -> Result:
-        return Result(warn, hint=hint, metric=metric)
+        """
+        Create a warning result.
+
+        :param hint: Optional hint message to provide additional context for the warning.
+        :param metric: Optional metric associated with the warning.
+
+        :return: A Result object representing a warning.
+        """
+        return Result(warning, hint=hint, metric=metric)
 
     def critical(
         self,
         hint: typing.Optional[str] = None,
         metric: typing.Optional["Metric"] = None,
     ) -> Result:
+        """
+        Create a critical result.
+
+        :param hint: Optional hint message providing additional context about the critical result.
+        :param metric: Optional metric object associated with this critical result.
+
+        :return: A Result object representing a critical state.
+        """
         return Result(critical, hint=hint, metric=metric)
 
     def unknown(
@@ -1605,6 +1642,14 @@ class Context:
         hint: typing.Optional[str] = None,
         metric: typing.Optional["Metric"] = None,
     ) -> Result:
+        """
+        Create a Result object with an unknown status.
+
+        :param hint: Optional hint message providing additional context about why the result is unknown
+        :param metric: Optional Metric object associated with this result
+
+        :return: A Result object with unknown status
+        """
         return Result(unknown, hint=hint, metric=metric)
 
     # This could be corrected by re-implementing this class as a proper ABC.
@@ -1618,14 +1663,16 @@ class Context:
         This base implementation just returns none. Plugin authors may
         override this method in subclass to specialize behaviour.
 
-        .. code:: Python
+        .. code-block:: python
 
             def performance(self, metric: Metric, resource: Resource) -> Performance:
                 return Performance(label=metric.name, value=metric.value)
 
-        .. code:: Python
+        .. code-block:: python
 
-            def performance(self, metric: Metric, resource: Resource) -> Performance | None:
+            def performance(
+                self, metric: Metric, resource: Resource
+            ) -> Performance | None:
                 if not opts.performance_data:
                     return None
                 return Performance(
@@ -1724,7 +1771,7 @@ class ScalarContext(Context):
         if not self.critical_range.match(metric.value):
             return self.result_cls(critical, self.critical_range.violation, metric)
         if not self.warn_range.match(metric.value):
-            return self.result_cls(warn, self.warn_range.violation, metric)
+            return self.result_cls(warning, self.warn_range.violation, metric)
         return self.result_cls(ok, None, metric)
 
     def performance(self, metric: "Metric", resource: "Resource") -> Performance:
