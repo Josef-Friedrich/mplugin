@@ -118,7 +118,7 @@ Logging and verbosity levels
 ----------------------------
 
 **mplugin** integrates with the `logging`_ module from Python's standard
-library. If the main function is decorated with `guarded` (which is heavily
+library. If the main function is decorated with :meth:`guarded` (which is heavily
 recommended), the logging module gets automatically configured before the
 execution of the `main()` function starts. Messages logged to the *mplugin*
 logger (or any sublogger) are processed with mplugin's integrated logging.
@@ -153,7 +153,7 @@ Consider the following example check::
        main()
 
 The verbosity level is set in the :meth:`check.main()` invocation depending on
-the number of "-v" flags. Let's test this check:
+the number of ``-v`` flags.
 
 .. code-block:: bash
 
@@ -182,7 +182,7 @@ printed on one line and the warning message is displayed. Messages logged with
 Setting *verbose* to 1 does not change the logging level but enable multi-line
 output. Additionally, full tracebacks would be printed in the case of an
 uncaught exception.
-Verbosity levels of 2 and 3 enable logging with *info* or *debug* levels.
+Verbosity levels of ``2`` and ``3`` enable logging with *info* or *debug* levels.
 
 This behaviour conforms to the "Verbose output" suggestions found in the
 `Monitoring plug-in development guidelines`_.

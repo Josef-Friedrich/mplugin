@@ -186,14 +186,18 @@ class TestCheck:
 
     def test_execute(self) -> None:
         def fake_execute(
-            check: Check, verbose: Optional[int] = None, timeout: Optional[int] = None
+            check: Check,
+            verbose: Optional[int] = None,
+            timeout: Optional[int] = None,
+            colorize: bool = False,
         ) -> None:
             assert 2 == verbose
             assert 20 == timeout
+            assert colorize
 
         r = _Runtime()
         r.execute = fake_execute  # type: ignore
-        Check().main(2, 20)
+        Check().main(2, 20, True)
 
     def test_verbose_str(self) -> None:
         assert "" == Check().verbose_str

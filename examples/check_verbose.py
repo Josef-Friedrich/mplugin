@@ -14,13 +14,13 @@ class Logging(mplugin.Resource):
         return [mplugin.Metric("zero", 0, context="default")]
 
 
-@mplugin.guarded
+@mplugin.guarded()
 def main():
     argp = argparse.ArgumentParser()
     argp.add_argument("-v", "--verbose", action="count", default=0)
     args = argp.parse_args()
     check = mplugin.Check(Logging())
-    check.main(args.verbose)
+    check.main(args.verbose, colorize=True)
 
 
 if __name__ == "__main__":

@@ -868,8 +868,7 @@ R = typing.TypeVar("R")
 
 
 def guarded(
-    original_function: typing.Any = None,
-    verbose: typing.Any = None,
+    original_function: typing.Any = None, verbose: typing.Any = None
 ) -> typing.Any:
     """Runs a function mplugin's Runtime environment.
 
@@ -918,10 +917,34 @@ def guarded(
     return _decorate  # type: ignore
 
 
+class _AnsiColorFormatter(logging.Formatter):
+    """https://medium.com/@kamilmatejuk/inside-python-colorful-logging-ad3a74442cc6"""
+
+    def format(self, record: logging.LogRecord) -> str:
+        no_style = "\033[0m"
+        bold = "\033[91m"
+        grey = "\033[90m"
+        yellow = "\033[93m"
+        red = "\033[31m"
+        red_light = "\033[91m"
+        blue = "\033[34m"
+        start_style = {
+            "DEBUG": grey,
+            "INFO": blue,
+            "WARNING": yellow,
+            "ERROR": red,
+            "CRITICAL": red_light + bold,
+        }.get(record.levelname, no_style)
+        end_style = no_style
+        return f"{start_style}{super().format(record)}{end_style}"
+
+
 class _Runtime:
     instance: typing.Optional[typing_extensions.Self] = None  # type: ignore
     check: typing.Optional["Check"] = None
     _verbose = 1
+    _colorize: bool = False
+    """Use ANSI colors to colorize the logging output"""
     timeout: typing.Optional[int] = None
     logchan: logging.StreamHandler[io.StringIO]
     output: _Output
@@ -934,7 +957,7 @@ class _Runtime:
         return cls.instance
 
     def __init__(self) -> None:
-        rootlogger = logging.getLogger(__name__.split(".", 1)[0])
+        rootlogger = logging.getLogger("mplugin")
         rootlogger.setLevel(logging.DEBUG)
         self.logchan = logging.StreamHandler(io.StringIO())
         self.logchan.setFormatter(logging.Formatter("%(message)s"))
@@ -977,19 +1000,37 @@ class _Runtime:
             self.logchan.setLevel(logging.WARNING)
         self.output.verbose = self._verbose
 
+    @property
+    def colorize(self) -> int:
+        return self._colorize
+
+    @colorize.setter
+    def colorize(self, colorize: bool) -> None:
+        self._colorize = colorize
+        if colorize:
+            self.logchan.setFormatter(_AnsiColorFormatter("%(message)s"))
+        else:
+            self.logchan.setFormatter(logging.Formatter("%(message)s"))
+
     def run(self, check: "Check") -> None:
         check()
         self.output.add(check)
         self.exitcode = check.exitcode
 
     def execute(
-        self, check: "Check", verbose: typing.Any = None, timeout: typing.Any = None
+        self,
+        check: "Check",
+        verbose: typing.Any = None,
+        timeout: typing.Any = None,
+        colorize: bool = False,
     ) -> typing.NoReturn:
         self.check = check
         if verbose is not None:
             self.verbose = verbose
         if timeout is not None:
             self.timeout = int(timeout)
+        if colorize:
+            self.colorize = True
         if self.timeout:
             _with_timeout(self.timeout, self.run, check)
         else:
@@ -1833,16 +1874,16 @@ class _Contexts:
 """
 
 
-log = logging.getLogger(__name__)
+log: logging.Logger = logging.getLogger("mplugin")
 """
 **mplugin** integrates with the logging module from Python's standard
-library. If the main function is decorated with `guarded` (which is heavily
+library. If the main function is decorated with :meth:`guarded` (which is heavily
 recommended), the logging module gets automatically configured before the
 execution of the `main()` function starts. Messages logged to the *mplugin*
 logger (or any sublogger) are processed with mplugin's integrated logging.
 
 The verbosity level is set in the :meth:`check.main()` invocation depending on
-the number of "-v" flags.
+the number of ``-v`` flags.
 
 When called with *verbose=0,* both the summary and the performance data are
 printed on one line and the warning message is displayed. Messages logged with
@@ -1850,7 +1891,7 @@ printed on one line and the warning message is displayed. Messages logged with
 Setting *verbose* to 1 does not change the logging level but enable multi-line
 output. Additionally, full tracebacks would be printed in the case of an
 uncaught exception.
-Verbosity levels of 2 and 3 enable logging with *info* or *debug* levels.
+Verbosity levels of ``2`` and ``3`` enable logging with *info* or *debug* levels.
 """
 
 
@@ -1966,7 +2007,10 @@ class Check:
         self.perfdata = sorted([p for p in self.perfdata if p])
 
     def main(
-        self, verbose: typing.Any = None, timeout: typing.Any = None
+        self,
+        verbose: typing.Any = None,
+        timeout: typing.Any = None,
+        colorize: bool = False,
     ) -> typing.NoReturn:
         """All-in-one control delegation to the runtime environment.
 
@@ -1977,9 +2021,10 @@ class Check:
         :param verbose: output verbosity level between 0 and 3
         :param timeout: abort check execution with a :exc:`Timeout`
             exception after so many seconds (use 0 for no timeout)
+        :param colorize: Use ANSI colors to colorize the logging output
         """
         runtime = _Runtime()
-        runtime.execute(self, verbose, timeout)
+        runtime.execute(self, verbose=verbose, timeout=timeout, colorize=colorize)
 
     @property
     def state(self) -> ServiceState:
@@ -2159,6 +2204,9 @@ def timespan(spec: typing.Union[str, int, float]) -> float:
     - ``milliseconds``, ``millisecond``, ``msec``, ``ms``
     - ``microseconds``,  ``microsecond``, ``usec``, ``μs``, ``μ``, ``us``
 
+    This function can be used as type in the
+    :py:meth:`argparse.ArgumentParser.add_argument` method.
+
     .. code-block:: python
 
         parser.add_argument(
@@ -2166,7 +2214,7 @@ def timespan(spec: typing.Union[str, int, float]) -> float:
             "--critical",
             default=5356800,
             help="Interval in seconds for critical state.",
-            type=convert_timespan_to_seconds,
+            type=timespan,
         )
 
     :param timespan: The specification of the timespan as a string, for example
