@@ -152,6 +152,8 @@ Consider the following example check::
    if __name__ == '__main__':
        main()
 
+
+
 The verbosity level is set in the :meth:`check.main()` invocation depending on
 the number of ``-v`` flags.
 
@@ -192,6 +194,18 @@ are printed for uncaught exceptions raised in the initialization phase (before
 :meth:`Check.main` is called). This is generally a good thing. To suppress
 tracebacks during initialization, call :func:`~mplugin.runtime.guarded`
 with an optional `verbose` parameter. Example:
+
++-----------------+----------+----------------------------+
+| verbosity level | args     | output                     |
++=================+==========+============================+
+| 0               |          | one line, error, warning   |
++-----------------+----------+----------------------------+
+| 1               | ``-v``   | multi-line, error, warning |
++-----------------+----------+----------------------------+
+| 2               | ``-vv``  | info                       |
++-----------------+----------+----------------------------+
+| 3               | ``-vvv`` | debug                      |
++-----------------+----------+----------------------------+
 
 .. code-block:: python
 
