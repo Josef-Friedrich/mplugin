@@ -13,6 +13,7 @@ Release History
 - Export the class ``ServiceState``
 - Convert all namped tuples in classes (``Metric``, ``Performance``, ``ServiceState``)
 - Remove ``compat.py``
+- Replace the ``result_cls`` attribute with a ``result`` method
 - Add helper methods ``ok()``, ``warning()``, ``critical()``, ``unknown()`` in ``Context``
 - Add the ``setup_argparse`` function
 - Add the  ``timespan()`` function to convert time interval strings, such as ``2h30min``,  into seconds.

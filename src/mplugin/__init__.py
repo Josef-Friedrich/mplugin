@@ -1272,8 +1272,7 @@ The :class:`Results` class (plural form) provides a result container with
 access functions and iterators.
 
 Plugin authors may create their own :class:`Result` subclass to
-accomodate for special needs. :class:`~.context.Context` constructors
-accept custom Result subclasses in the `result_cls` parameter.
+accomodate for special needs.
 """
 
 
@@ -1596,25 +1595,19 @@ class Context:
         attribute of :class:`~mplugin.Metric`
     :param fmt_metric: string or callable to convert
         context and associated metric to a human readable string
-    :param result_cls: use this class (usually a
-        :class:`~.result.Result` subclass) to represent the
-        evaluation outcome
     """
 
     name: str
     fmt_metric: typing.Optional[FmtMetric]
-    result_cls: type[Result]
 
     def __init__(
         self,
         name: str,
         fmt_metric: typing.Optional[FmtMetric] = None,
-        result_cls: type[Result] = Result,
     ) -> None:
 
         self.name = name
         self.fmt_metric = fmt_metric
-        self.result_cls = result_cls
 
     def evaluate(
         self, metric: "Metric", resource: "Resource"
@@ -1631,7 +1624,24 @@ class Context:
         :returns: :class:`~.result.Result` or
             :class:`~.state.ServiceState` object
         """
-        return self.result_cls(ok, metric=metric)
+        return self.result(ok, metric=metric)
+
+    def result(
+        self,
+        state: ServiceState,
+        hint: typing.Optional[str] = None,
+        metric: typing.Optional["Metric"] = None,
+    ) -> Result:
+        """
+        Create a Result object with the given state, hint, and metric.
+
+        :param state: The service state for the result.
+        :param hint: An optional hint message providing additional context.
+        :param metric: An optional Metric object associated with the result.
+
+        :return: A Result object containing the provided state, hint, and metric.
+        """
+        return Result(state=state, hint=hint, metric=metric)
 
     def ok(
         self,
@@ -1646,7 +1656,7 @@ class Context:
 
         :return: A Result object representing a successful operation.
         """
-        return Result(ok, hint=hint, metric=metric)
+        return self.result(ok, hint=hint, metric=metric)
 
     def warning(
         self,
@@ -1661,7 +1671,7 @@ class Context:
 
         :return: A Result object representing a warning.
         """
-        return Result(warning, hint=hint, metric=metric)
+        return self.result(warning, hint=hint, metric=metric)
 
     def critical(
         self,
@@ -1676,7 +1686,7 @@ class Context:
 
         :return: A Result object representing a critical state.
         """
-        return Result(critical, hint=hint, metric=metric)
+        return self.result(critical, hint=hint, metric=metric)
 
     def unknown(
         self,
@@ -1691,7 +1701,7 @@ class Context:
 
         :return: A Result object with unknown status
         """
-        return Result(unknown, hint=hint, metric=metric)
+        return self.result(unknown, hint=hint, metric=metric)
 
     # This could be corrected by re-implementing this class as a proper ABC.
     # See issue #43
@@ -1777,14 +1787,13 @@ class ScalarContext(Context):
         warning: typing.Optional[RangeSpec] = None,
         critical: typing.Optional[RangeSpec] = None,
         fmt_metric: FmtMetric = "{name} is {valueunit}",
-        result_cls: type[Result] = Result,
     ) -> None:
         """Ready-to-use :class:`Context` subclass for scalar values.
 
         ScalarContext models the common case where a single scalar is to
         be evaluated against a pair of warning and critical thresholds.
 
-        :attr:`name`, :attr:`fmt_metric`, and :attr:`result_cls`,
+        :attr:`name` and :attr:`fmt_metric`,
         are described in the :class:`Context` base class.
 
         :param warning: Warning threshold as
@@ -1792,7 +1801,7 @@ class ScalarContext(Context):
         :param critical: Critical threshold as
             :class:`~mplugin.Range` object or range string.
         """
-        super(ScalarContext, self).__init__(name, fmt_metric, result_cls)
+        super(ScalarContext, self).__init__(name, fmt_metric)
         self.warn_range = Range(warning)
         self.critical_range = Range(critical)
 
@@ -1810,10 +1819,10 @@ class ScalarContext(Context):
         :returns: :class:`~mplugin.Result` object
         """
         if not self.critical_range.match(metric.value):
-            return self.result_cls(critical, self.critical_range.violation, metric)
+            return self.critical(self.critical_range.violation, metric)
         if not self.warn_range.match(metric.value):
-            return self.result_cls(warning, self.warn_range.violation, metric)
-        return self.result_cls(ok, None, metric)
+            return self.warning(self.warn_range.violation, metric)
+        return self.ok(None, metric)
 
     def performance(self, metric: "Metric", resource: "Resource") -> Performance:
         """Derives performance data.
