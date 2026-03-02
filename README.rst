@@ -3,14 +3,22 @@ The m(onitoring)plugin library
 
 This is a fork of the `nagiosplugin`_. Changes:
 
-- Type hints
-- Removed deprecated code: ``ScalarResult``
-- ``Ok`` renamed to ``ok`` etc ...
-- Export ``ServiceState``
+- Drop support for Python versions 3.9 and below
+- Add type hints
+- Remove deprecated code: ``ScalarResult``
+- Rename all four service state objects to lower-class names. For example,
+  ``Ok`` was renamed to ``ok``, and so on
+- Rename the warning state from ``warn`` to ``warning``
+- Export the class ``ServiceState``
 - Convert all namped tuples in classes (``Metric``, ``Performance``, ``ServiceState``)
 - Remove ``compat.py``
-- Add helper methods ``ok()``, ``warn()``, ``critical()``, ``unknown()`` in ``Context``
-- Add function ``setup_argparse``
+- Add helper methods ``ok()``, ``warning()``, ``critical()``, ``unknown()`` in ``Context``
+- Add the ``setup_argparse`` function
+- Add the  ``timespan()`` function to convert time interval strings, such as ``2h30min``,  into seconds.
+- Merge all code into a single source file,
+- Merge the entire code base into a single file to make it easier to embed the code
+  in a monitoring plugin instead of importing it. This allows a plugin to be
+  implemented without dependencies.
 
 About
 -----
@@ -51,7 +59,7 @@ Documentation
 -------------
 
 Comprehensive documentation is `available online`_. The examples mentioned in
-the `tutorials`_ can also be found in the `mplugin/examples` directory of
+the `tutorials`_ can also be found in the `examples` directory of
 the source distribution.
 
 .. _available online: https://mplugin.readthedocs.io/

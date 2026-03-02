@@ -1,20 +1,25 @@
 Release History
 ===============
 
-2.0.0
------
+2.0.0 (2026-03-02)
+------------------
 
-- drop support for Python 3.9 and below
-- Remove ScalarResult
+- Drop support for Python versions 3.9 and below
 - Add type hints
-
-1.5.0 (not yet released)
-------------------------
-
-IMPORTANT NOTE:  Please see the announcement about the new `python release
-support policy`_.
-
-- change: drop support for Python 2.7, 3.7, and 3.8
+- Remove deprecated code: ``ScalarResult``
+- Rename all four service state objects to lower-class names. For example,
+  ``Ok`` was renamed to ``ok``, and so on
+- Rename the warning state from ``warn`` to ``warning``
+- Export the class ``ServiceState``
+- Convert all namped tuples in classes (``Metric``, ``Performance``, ``ServiceState``)
+- Remove ``compat.py``
+- Add helper methods ``ok()``, ``warning()``, ``critical()``, ``unknown()`` in ``Context``
+- Add the ``setup_argparse`` function
+- Add the  ``timespan()`` function to convert time interval strings, such as ``2h30min``,  into seconds.
+- Merge all code into a single source file,
+- Merge the entire code base into a single file to make it easier to embed the code
+  in a monitoring plugin instead of importing it. This allows a plugin to be
+  implemented without dependencies.
 
 1.4.0 (2025-05-19)
 ------------------
