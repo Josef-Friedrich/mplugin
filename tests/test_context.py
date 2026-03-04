@@ -10,7 +10,7 @@ from mplugin import (
     Result,
     ScalarContext,
     ServiceState,
-    _Contexts,
+    _Contexts,  # type: ignore
     critical,
     ok,
     unknown,

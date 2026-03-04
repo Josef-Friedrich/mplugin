@@ -114,3 +114,5 @@ class TestRuntimeException(TestRuntimeBase):
             @guarded(0)
             def main() -> None:
                 pass
+
+            main()

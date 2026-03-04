@@ -2,7 +2,7 @@ import time
 
 import pytest
 
-from mplugin import Timeout, _with_timeout
+from mplugin import Timeout, _with_timeout  # type: ignore
 
 
 class TestPlatform:
