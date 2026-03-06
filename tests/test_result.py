@@ -27,7 +27,7 @@ class TestResult:
 
     def test_metric_context(self) -> None:
         ctx = Context("test")
-        m = Metric("foo", 1, contextobj=ctx)
+        m = Metric("foo", 1, context=ctx)
         assert Result(ok, metric=m).context == ctx
 
     def test_str_metric_with_hint(self) -> None:

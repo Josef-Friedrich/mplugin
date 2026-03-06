@@ -88,7 +88,7 @@ class TestCheck:
         c = Check(ctx)
         c._evaluate_resource(R2_MetricCustomContext())  # type: ignore
         assert c.results[0].metric
-        assert c.results[0].metric.contextobj == ctx
+        assert c.results[0].metric.context == ctx
 
     def test_evaluate_resource_catches_checkerror(self) -> None:
         class R3_Faulty(Resource):

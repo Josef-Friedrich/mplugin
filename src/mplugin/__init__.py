@@ -1104,17 +1104,6 @@ class _Runtime:
 """
 
 
-class _MetricKwargs(typing.TypedDict, total=False):
-    name: str
-    value: typing.Any
-    uom: str
-    min: float
-    max: float
-    context: str
-    contextobj: "Context"
-    resource: "Resource"
-
-
 class Metric:
     """Single measured value.
 
@@ -1132,9 +1121,9 @@ class Metric:
     uom: typing.Optional[str] = None
     min: typing.Optional[float] = None
     max: typing.Optional[float] = None
-    context: str
-    contextobj: typing.Optional["Context"] = None
-    resource: typing.Optional["Resource"] = None
+    context_name: str
+    __context: typing.Optional["Context"] = None
+    __resource: typing.Optional["Resource"] = None
 
     # Changing these now would be API-breaking, so we'll ignore these
     # shadowed built-ins
@@ -1146,9 +1135,8 @@ class Metric:
         uom: typing.Optional[str] = None,
         min: typing.Optional[float] = None,
         max: typing.Optional[float] = None,
-        context: typing.Optional[str] = None,
-        contextobj: typing.Optional["Context"] = None,
-        resource: typing.Optional["Resource"] = None,
+        context: typing.Optional[typing.Union[str, Context]] = None,
+        resource: typing.Optional[Resource] = None,
     ) -> None:
         """Creates new Metric instance.
 
@@ -1162,11 +1150,6 @@ class Metric:
         :param max: maximum value or None if there is no known maximum
         :param context: name of the associated context (defaults to the
             metric's name if left out)
-        :param contextobj: reference to the associated context object
-            (set automatically by :class:`~mplugin.check.Check`)
-        :param resource: reference to the originating
-            :class:`~mplugin.Resource` (set automatically
-            by :class:`~mplugin.check.Check`)
         """
         self.name = name
         self.value = value
@@ -1174,23 +1157,39 @@ class Metric:
         self.min = min
         self.max = max
         if context is not None:
-            self.context = context
+            if isinstance(context, str):
+                self.context_name = context
+            if isinstance(context, Context):
+                self.context_name = context.name
+                self.__context = context
         else:
-            self.context = name
-        self.contextobj = contextobj
-        self.resource = resource
+            self.context_name = name
+        if resource is not None:
+            self.__resource = resource
 
     def __str__(self) -> str:
         """Same as :attr:`valueunit`."""
         return self.valueunit
 
-    def replace(
-        self, **attr: typing_extensions.Unpack[_MetricKwargs]
-    ) -> typing_extensions.Self:
-        """Creates new instance with updated attributes."""
-        for key, value in attr.items():
-            setattr(self, key, value)
-        return self
+    @property
+    def resource(self) -> Resource:
+        if not self.__resource:
+            raise RuntimeError("no resource set for metric", self.name)
+        return self.__resource
+
+    @resource.setter
+    def resource(self, resource: Resource) -> None:
+        self.__resource = resource
+
+    @property
+    def context(self) -> Context:
+        if not self.__context:
+            raise RuntimeError("no context set for metric", self.name)
+        return self.__context
+
+    @context.setter
+    def context(self, context: Context) -> None:
+        self.__context = context
 
     @property
     def description(self) -> typing.Optional[str]:
@@ -1201,8 +1200,8 @@ class Metric:
         :returns: :meth:`~.context.Context.describe` output or
             :attr:`valueunit` if no context has been associated yet
         """
-        if self.contextobj:
-            return self.contextobj.describe(self)
+        if self.__context:
+            return self.__context.describe(self)
         return str(self)
 
     @property
@@ -1230,11 +1229,7 @@ class Metric:
         :return: :class:`~mplugin.Result` object
         :raise RuntimeError: if no context has been associated yet
         """
-        if not self.contextobj:
-            raise RuntimeError("no context set for metric", self.name)
-        if not self.resource:
-            raise RuntimeError("no resource set for metric", self.name)
-        return self.contextobj.evaluate(self, self.resource)
+        return self.context.evaluate(self, self.resource)
 
     def performance(self) -> list[Performance]:
         """Generates performance data according to the context.
@@ -1242,11 +1237,7 @@ class Metric:
         :return: :class:`~mplugin.Performance` object
         :raise RuntimeError: if no context has been associated yet
         """
-        if not self.contextobj:
-            raise RuntimeError("no context set for metric", self.name)
-        if not self.resource:
-            raise RuntimeError("no resource set for metric", self.name)
-        result = self.contextobj.performance(self, self.resource)
+        result = self.context.performance(self, self.resource)
 
         if result is None:
             return []
@@ -1407,7 +1398,7 @@ class Result:
         """Reference to the metric used to generate this result."""
         if not self.metric:
             return None
-        return self.metric.contextobj
+        return self.metric.context
 
     def __eq__(self, value: object) -> bool:
         if not isinstance(value, Result):
@@ -2060,9 +2051,12 @@ class Check:
                 # resource returned a bare metric instead of list/generator
                 metrics = [metrics]
             for metric in metrics:
-                context = self.contexts[metric.context]
-                metric = metric.replace(contextobj=context, resource=resource)
+                context = self.contexts[metric.context_name]
+                metric.context = context
+                metric.resource = resource
+
                 result = metric.evaluate()
+
                 if isinstance(result, Result):
                     self.results.add(result)
                 elif isinstance(result, ServiceState):  # type: ignore
