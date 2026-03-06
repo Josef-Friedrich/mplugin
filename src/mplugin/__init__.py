@@ -769,6 +769,8 @@ class Performance:
     See the
     `Monitoring plugin guidelines <https://github.com/monitoring-plugins/monitoring-plugin-guidelines/blob/main/monitoring_plugins_interface/03.Output.md#performance-data>`__
     for details.
+
+    https://www.monitoring-plugins.org/doc/guidelines.html#AEN197
     """
 
     label: str
@@ -839,19 +841,30 @@ class Performance:
 
         out: list[str] = [performance]
 
-        if self.warn is not None and self.warn != "" and self.warn != Range(""):
+        # https://www.monitoring-plugins.org/doc/guidelines.html#AEN197
+        # warn, crit, min or max may be null (for example, if the threshold is not defined or min and max do not apply). Trailing unfilled semicolons can be dropped
+
+        if self.warn is None:
+            out.append("")
+        else:
             out.append(str(self.warn))
 
-        if self.crit is not None and self.crit != "" and self.crit != Range(""):
+        if self.crit is None:
+            out.append("")
+        else:
             out.append(str(self.crit))
 
-        if self.min is not None:
+        if self.min is None:
+            out.append("")
+        else:
             out.append(str(self.min))
 
-        if self.max is not None:
+        if self.max is None:
+            out.append("")
+        else:
             out.append(str(self.max))
 
-        return ";".join(out)
+        return re.sub(r";+$", "", ";".join(out))
 
 
 # runtime.py

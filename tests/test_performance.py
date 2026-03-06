@@ -30,15 +30,15 @@ def test_warn() -> None:
 
 
 def test_crit() -> None:
-    assert "d=10;10:20" == str(Performance("d", 10, crit="10:20"))
+    assert "d=10;;10:20" == str(Performance("d", 10, crit="10:20"))
 
 
 def test_min() -> None:
-    assert "d=10;0" == str(Performance("d", 10, min=0))
+    assert "d=10;;;0" == str(Performance("d", 10, min=0))
 
 
 def test_max() -> None:
-    assert "d=10;100" == str(Performance("d", 10, max=100))
+    assert "d=10;;;;100" == str(Performance("d", 10, max=100))
 
 
 def test_uom_and_warn() -> None:

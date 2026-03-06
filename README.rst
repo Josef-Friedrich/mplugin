@@ -20,6 +20,7 @@ This is a fork of the `nagiosplugin`_. Changes:
 - Merge the entire code base into a single file to make it easier to embed the code
   in a monitoring plugin instead of importing it. This allows a plugin to be
   implemented without dependencies.
+- Do not remove leading unfilled semicolons in the rendered performance data
 
 About
 -----

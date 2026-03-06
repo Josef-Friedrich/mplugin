@@ -1,6 +1,11 @@
 Release History
 ===============
 
+Unreleased
+----------
+
+- Do not remove leading unfilled semicolons in the rendered performance data
+
 2.0.0 (2026-03-02)
 ------------------
 
