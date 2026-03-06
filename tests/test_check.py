@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Any, Generator, Optional
 
 import pytest
 
@@ -7,6 +7,7 @@ from mplugin import (
     CheckError,
     Context,
     Metric,
+    Performance,
     Resource,
     Result,
     Results,
@@ -201,3 +202,22 @@ class TestCheck:
 
     def test_verbose_str(self) -> None:
         assert "" == Check().verbose_str
+
+    def test_context_multiple_performance(self) -> None:
+        class MyResource(Resource):
+            def probe(self) -> Metric:
+                return Metric("my", 1)
+
+        class MyContext(Context):
+            def __init__(self) -> None:
+                super().__init__("my")
+
+            def performance(
+                self, metric: Metric, resource: Resource
+            ) -> Generator[Performance, Any, None]:
+                yield Performance("a", 1)
+                yield Performance("b", 2)
+
+        c = Check(MyResource(), MyContext())
+        c()
+        assert ["a=1", "b=2"] == c.perfdata

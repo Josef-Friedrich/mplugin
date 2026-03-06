@@ -728,7 +728,7 @@ class _Output:
             self.add_longoutput(check.verbose_str)
             self.longperfdata.append(self.format_perfdata(check, 79))
 
-    def format_status(self, check: "Check"):
+    def format_status(self, check: "Check") -> str:
         if check.name:
             name_prefix = check.name.upper() + " "
         else:
@@ -1118,13 +1118,13 @@ class _MetricKwargs(typing.TypedDict, total=False):
 class Metric:
     """Single measured value.
 
-    This module contains the :class:`Metric` class whose instances are
-    passed as value objects between most of mplugin's core classes.
-    Typically, :class:`~.resource.Resource` objects emit a list of metrics
-    as result of their :meth:`~.resource.Resource.probe` methods.
+    Instances of ths class are passed as value objects between most of
+    mplugin's core classes. Typically, :class:`~.Resource` objects
+    emit a list of metrics as result of their :meth:`~.Resource.probe`
+    methods.
 
-    The value should be expressed in terms of base units, so
-    Metric('swap', 10240, 'B') is better than Metric('swap', 10, 'kiB').
+    The value should be expressed in terms of base units, so Metric('swap',
+    10240, 'B') is better than Metric('swap', 10, 'kiB').
     """
 
     name: str
@@ -1236,17 +1236,30 @@ class Metric:
             raise RuntimeError("no resource set for metric", self.name)
         return self.contextobj.evaluate(self, self.resource)
 
-    def performance(self) -> typing.Optional[Performance]:
+    def performance(self) -> list[Performance]:
         """Generates performance data according to the context.
 
-        :return: :class:`~mplugin.performance.Performance` object
+        :return: :class:`~mplugin.Performance` object
         :raise RuntimeError: if no context has been associated yet
         """
         if not self.contextobj:
             raise RuntimeError("no context set for metric", self.name)
         if not self.resource:
             raise RuntimeError("no resource set for metric", self.name)
-        return self.contextobj.performance(self, self.resource)
+        result = self.contextobj.performance(self, self.resource)
+
+        if result is None:
+            return []
+
+        if isinstance(result, Performance):
+            return [result]
+
+        output: list[Performance] = []
+
+        for preformance in result:
+            output.append(preformance)
+
+        return output
 
 
 # resource.py
@@ -1764,7 +1777,13 @@ class Context:
     # pylint: disable-next=no-self-use
     def performance(
         self, metric: "Metric", resource: "Resource"
-    ) -> typing.Optional[Performance]:
+    ) -> typing.Optional[
+        typing.Union[
+            Performance,
+            typing.Sequence[Performance],
+            typing.Generator[Performance, typing.Any, None],
+        ]
+    ]:
         """Derives performance data from a given metric.
 
         This base implementation just returns none. Plugin authors may
@@ -2054,7 +2073,8 @@ class Check:
                         metric.name,
                         result,
                     )
-                self.perfdata.append(str(metric.performance() or ""))
+                for performance in metric.performance():
+                    self.perfdata.append(str(performance))
         except CheckError as e:
             self.results.add(Result(unknown, str(e), metric))
 

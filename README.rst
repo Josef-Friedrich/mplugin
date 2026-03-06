@@ -22,6 +22,7 @@ This is a fork of the `nagiosplugin`_. Changes:
   implemented without dependencies.
 - Do not remove leading unfilled semicolons in the rendered performance data
 - Add additional parameters (``invert``, ``start``, ``end``) to the constructor of the ``Range`` class
+- Allow the return of multiple performance data points in the ``Context.performance`` method
 
 About
 -----
