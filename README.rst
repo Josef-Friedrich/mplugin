@@ -21,6 +21,7 @@ This is a fork of the `nagiosplugin`_. Changes:
   in a monitoring plugin instead of importing it. This allows a plugin to be
   implemented without dependencies.
 - Do not remove leading unfilled semicolons in the rendered performance data
+- Add additional parameters (``invert``, ``start``, ``end``) to the constructor of the ``Range`` class
 
 About
 -----

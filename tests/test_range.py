@@ -10,6 +10,12 @@ class TestRangeParse:
         assert r.start == 0
         assert r.end == float("inf")
 
+    def test_none(self) -> None:
+        r = Range()
+        assert r.invert is False
+        assert r.start == 0
+        assert r.end == float("inf")
+
     def test_null_range(self) -> None:
         assert Range() == Range("")
         assert Range() == Range(None)  # type: ignore
@@ -109,3 +115,27 @@ class TestRangeStr:
 
     def test_violation_empty_range(self) -> None:
         assert "outside range 0:" == Range("").violation
+
+
+class TestAdditionalConstructorParameters:
+    def test_exception(self) -> None:
+        with pytest.raises(ValueError):
+            Range(spec="1:2", start=1)
+
+    def test_explicit_start_stop(self) -> None:
+        assert "1.5:5" == str(Range(start=1.5, end=5))
+
+    def test_omit_start(self) -> None:
+        assert "6.7" == str(Range(end=6.7))
+
+    def test_omit_end(self) -> None:
+        assert "-6.5:" == str(Range(start=-6.5))
+
+    def test_neg_infinity(self) -> None:
+        assert "~:-3.0" == str(Range(start=float("-inf"), end=-3.0))
+
+    def test_invert(self) -> None:
+        assert "@3:7" == str(Range(invert=True, start=3, end=7))
+
+    def test_large_number(self) -> None:
+        assert "2800000000" == str(Range(end=2800000000))

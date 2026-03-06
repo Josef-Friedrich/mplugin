@@ -203,30 +203,73 @@ class Range:
     See the
     `Monitoring plugin guidelines <https://github.com/monitoring-plugins/monitoring-plugin-guidelines/blob/main/definitions/01.range_expressions.md>`__
     for details.
+
+
+    https://www.monitoring-plugins.org/doc/guidelines.html#THRESHOLDFORMAT
     """
 
     invert: bool
+    """If the true, the value exceeds the threshold if it is INSIDE the range
+    between start and end (including the endpoints)."""
 
     start: float
+    """The (inclusive) start point on a numeric scale (possibly negative or
+    negative infinity)."""
 
     end: float
+    """The (inclusive) end point on a numeric scale (possibly negative or
+    positive infinity)."""
 
-    def __init__(self, spec: typing.Optional[RangeSpec] = None) -> None:
+    def __init__(
+        self,
+        spec: typing.Optional[RangeSpec] = None,
+        invert: typing.Optional[bool] = None,
+        start: typing.Optional[float] = None,
+        end: typing.Optional[float] = None,
+    ) -> None:
         """Creates a Range object according to `spec`.
 
         :param spec: may be either a string, a float, or another
             Range object.
+        :param invert: If the true, the value exceeds the threshold if it is
+            INSIDE the range between start and end (including the endpoints).
+        :param start: The (inclusive) start point on a numeric scale (possibly
+            negative or negative infinity).
+        :param end: The (inclusive) end point on a numeric scale (possibly
+            negative or positive infinity).
         """
-        spec = spec or ""
+
+        if spec is not None and not (invert is None and start is None and end is None):
+            raise ValueError("Specify spec OR invert, start, end! not both")
+
         if isinstance(spec, Range):
             self.invert = spec.invert
             self.start = spec.start
             self.end = spec.end
+
         elif isinstance(spec, int) or isinstance(spec, float):
             self.invert = False
             self.start = 0
             self.end = spec
+
+        elif spec is None and not (invert is None and start is None and end is None):
+            if invert is not None:
+                self.invert = invert
+            else:
+                self.invert = False
+
+            if start is not None:
+                self.start = start
+            else:
+                self.start = 0
+
+            if end is not None:
+                self.end = end
+            else:
+                self.end = float("inf")
         else:
+            if spec is None:
+                spec = ""
             self.start, self.end, self.invert = Range._parse(str(spec))
         Range._verify(self.start, self.end)
 
