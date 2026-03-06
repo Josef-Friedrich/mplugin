@@ -81,6 +81,16 @@ class TestRangeParse:
         assert 2.5 in r
         assert 2.6 not in r
 
+    def test_in(self) -> None:
+        r = Range("2:4")
+        assert 1 not in r
+        assert 1.999999 not in r
+        assert 2 in r
+        assert 3 in r
+        assert 3.5 in r
+        assert 4 in r
+        assert 4.001 not in r
+
     def test_repr(self) -> None:
         assert "Range('2:3')" == repr(Range("2:3"))
 
