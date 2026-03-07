@@ -1,6 +1,6 @@
-##############################
-mplugin Documentation
-##############################
+################################
+m(onitoring)plugin Documentation
+################################
 
 This documentation covers mplugin |version|.
 
