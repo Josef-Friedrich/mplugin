@@ -6,17 +6,12 @@ import importlib
 import io
 import json
 import os
-import typing
 from collections import UserDict
 from tempfile import TemporaryFile
 from types import TracebackType
+from typing import Any, Generator, Optional, cast
 
-import typing_extensions
-
-# cookie.py
-
-"""Persistent dict to remember state between invocations.
-"""
+from typing_extensions import Self
 
 
 def _flock_exclusive(fileobj: io.TextIOWrapper) -> None:
@@ -31,7 +26,7 @@ def _flock_exclusive(fileobj: io.TextIOWrapper) -> None:
         msvcrt.locking(fileobj.fileno(), msvcrt.LK_LOCK, 2147483647)
 
 
-class Cookie(UserDict[str, typing.Any]):
+class Cookie(UserDict[str, Any]):
     """Creates a persistent dict to keep state.
 
     Cookies are used to remember file positions, counters and the like
@@ -58,17 +53,17 @@ class Cookie(UserDict[str, typing.Any]):
         argument).
     """
 
-    path: typing.Optional[str]
+    path: Optional[str]
 
-    fobj: typing.Optional[io.TextIOWrapper]
+    fobj: Optional[io.TextIOWrapper]
 
-    def __init__(self, statefile: typing.Optional[str] = None) -> None:
+    def __init__(self, statefile: Optional[str] = None) -> None:
 
         super(Cookie, self).__init__()
         self.path = statefile
         self.fobj = None
 
-    def __enter__(self) -> typing_extensions.Self:
+    def __enter__(self) -> Self:
         """Allows Cookie to be used as context manager.
 
         Opens the file and passes a dict-like object into the
@@ -83,15 +78,15 @@ class Cookie(UserDict[str, typing.Any]):
 
     def __exit__(
         self,
-        exc_type: typing.Optional[type[BaseException]],
-        exc_value: typing.Optional[BaseException],
-        traceback: typing.Optional[TracebackType],
+        exc_type: Optional[type[BaseException]],
+        exc_value: Optional[BaseException],
+        traceback: Optional[TracebackType],
     ) -> None:
         if not exc_type:
             self.commit()
         self.close()
 
-    def open(self) -> typing_extensions.Self:
+    def open(self) -> Self:
         """Reads/creates the state file and initializes the dict.
 
         If the state file does not exist, it is touched into existence.
@@ -126,7 +121,7 @@ class Cookie(UserDict[str, typing.Any]):
         except IOError:
             return open(self.path, "w+", encoding="ascii")
 
-    def _load(self) -> dict[str, typing.Any]:
+    def _load(self) -> dict[str, Any]:
         if not self.fobj:
             raise RuntimeError("file object is none")
         self.fobj.seek(0)
@@ -135,7 +130,7 @@ class Cookie(UserDict[str, typing.Any]):
             raise ValueError(
                 "format error: cookie does not contain dict", self.path, data
             )
-        return typing.cast(dict[str, typing.Any], data)
+        return cast(dict[str, Any], data)
 
     def close(self) -> None:
         """Closes a cookie and its underlying state file.
@@ -166,9 +161,6 @@ class Cookie(UserDict[str, typing.Any]):
         os.fsync(self.fobj)
 
 
-# logtail.py
-
-
 class LogTail:
     """Access previously unseen parts of a growing file.
 
@@ -181,11 +173,11 @@ class LogTail:
     """
 
     path: str
-    cookie: "Cookie"
-    logfile: typing.Optional[io.BufferedIOBase] = None
-    stat: typing.Optional[os.stat_result]
+    cookie: Cookie
+    logfile: Optional[io.BufferedIOBase] = None
+    stat: Optional[os.stat_result]
 
-    def __init__(self, path: str, cookie: "Cookie") -> None:
+    def __init__(self, path: str, cookie: Cookie) -> None:
         """Creates new LogTail context.
 
         :param path: path to the log file that is to be observed
@@ -197,7 +189,7 @@ class LogTail:
         self.logfile = None
         self.stat = None
 
-    def _seek_if_applicable(self, fileinfo: dict[str, typing.Any]) -> None:
+    def _seek_if_applicable(self, fileinfo: dict[str, Any]) -> None:
         self.stat = os.stat(self.path)
         if (
             self.stat.st_ino == fileinfo.get("inode", -1)
@@ -206,7 +198,7 @@ class LogTail:
         ):
             self.logfile.seek(fileinfo["pos"])
 
-    def __enter__(self) -> typing.Generator[bytes, typing.Any, None]:
+    def __enter__(self) -> Generator[bytes, Any, None]:
         """Seeks to the last seen position and reads new lines.
 
         The last file position is read from the cookie. If the log file
@@ -228,9 +220,9 @@ class LogTail:
 
     def __exit__(
         self,
-        exc_type: typing.Optional[type[BaseException]],
-        exc_value: typing.Optional[BaseException],
-        traceback: typing.Optional[TracebackType],
+        exc_type: Optional[type[BaseException]],
+        exc_value: Optional[BaseException],
+        traceback: Optional[TracebackType],
     ) -> None:
         if not exc_type and self.stat is not None and self.logfile is not None:
             self.cookie[self.path] = dict(

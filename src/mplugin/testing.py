@@ -5,8 +5,8 @@ from __future__ import annotations
 import io
 import os
 import subprocess
-import typing
 from pathlib import Path
+from typing import Optional
 from unittest.mock import Mock
 
 from mplugin import ServiceState, state
@@ -16,14 +16,14 @@ class MockResult:
     """A class to collect the result of a mocked execution."""
 
     __sys_exit: Mock
-    __stdout: typing.Optional[str] = None
-    __stderr: typing.Optional[str] = None
+    __stdout: Optional[str] = None
+    __stderr: Optional[str] = None
 
     def __init__(
         self,
         sys_exit_mock: Mock,
-        stdout: typing.Optional[io.StringIO],
-        stderr: typing.Optional[io.StringIO],
+        stdout: Optional[io.StringIO],
+        stderr: Optional[io.StringIO],
     ) -> None:
         self.__sys_exit = sys_exit_mock
 
@@ -47,13 +47,13 @@ class MockResult:
         return state(self.exitcode)
 
     @property
-    def stdout(self) -> typing.Optional[str]:
+    def stdout(self) -> Optional[str]:
         if self.__stdout:
             return self.__stdout
         return None
 
     @property
-    def stderr(self) -> typing.Optional[str]:
+    def stderr(self) -> Optional[str]:
         if self.__stderr:
             return self.__stderr
         return None
@@ -71,7 +71,7 @@ class MockResult:
         return out
 
     @property
-    def first_line(self) -> typing.Optional[str]:
+    def first_line(self) -> Optional[str]:
         """The first line of the output without a newline break at the
         end as a string.
         """

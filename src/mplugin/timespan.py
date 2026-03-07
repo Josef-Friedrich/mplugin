@@ -3,13 +3,13 @@ Offers classes and functions to make it easier and more efficient to work with t
 """
 
 import re
-import typing
 from datetime import datetime
+from typing import Any, Optional, Union
 
-DateTimeSpec = typing.Optional[typing.Union[int, float, datetime]]
+DateTimeSpec = Optional[Union[int, float, datetime]]
 
 
-def convert_timespan_to_sec(spec: typing.Union[str, int, float]) -> float:
+def convert_timespan_to_sec(spec: Union[str, int, float]) -> float:
     """Convert a timespan format string to seconds.
     If no time unit is specified, generally seconds are assumed.
 
@@ -179,7 +179,7 @@ class Timespan:
         self,
         start: DateTimeSpec = None,
         end: DateTimeSpec = None,
-        timespan_from_now: typing.Optional[typing.Union[int, float]] = None,
+        timespan_from_now: Optional[Union[int, float]] = None,
     ) -> None:
         """ """
         if not (start is None and end is None) and timespan_from_now is not None:
@@ -205,32 +205,32 @@ class Timespan:
             return datetime.fromtimestamp(date)
         return date
 
-    def __lt__(self, other: typing.Any) -> bool:
+    def __lt__(self, other: Any) -> bool:
         if isinstance(other, int) or isinstance(other, float):
             return self.timespan < other
         raise ValueError("Unsupported type for __lt__")
 
-    def __le__(self, other: typing.Any) -> bool:
+    def __le__(self, other: Any) -> bool:
         if isinstance(other, int) or isinstance(other, float):
             return self.timespan <= other
         raise ValueError("Unsupported type for __le__")
 
-    def __eq__(self, other: typing.Any) -> bool:
+    def __eq__(self, other: Any) -> bool:
         if isinstance(other, int) or isinstance(other, float):
             return self.timespan == other
         raise ValueError("Unsupported type for __eq__")
 
-    def __ne__(self, other: typing.Any) -> bool:
+    def __ne__(self, other: Any) -> bool:
         if isinstance(other, int) or isinstance(other, float):
             return self.timespan != other
         raise ValueError("Unsupported type for __ne__")
 
-    def __ge__(self, other: typing.Any) -> bool:
+    def __ge__(self, other: Any) -> bool:
         if isinstance(other, int) or isinstance(other, float):
             return self.timespan >= other
         raise ValueError("Unsupported type for __ge__")
 
-    def __gt__(self, other: typing.Any) -> bool:
+    def __gt__(self, other: Any) -> bool:
         if isinstance(other, int) or isinstance(other, float):
             return self.timespan > other
         raise ValueError("Unsupported type for __gt__")
