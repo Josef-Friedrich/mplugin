@@ -13,6 +13,11 @@ mplugin.cli
 
 .. automodule:: mplugin.cli
 
+mplugin.persistence
+===================
+
+.. automodule:: mplugin.persistence
+
 mplugin.testing
 ===============
 
