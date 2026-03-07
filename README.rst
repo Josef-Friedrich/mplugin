@@ -15,7 +15,6 @@ This is a fork of the `nagiosplugin`_. Changes:
 - Replace the ``result_cls`` attribute with a ``result`` method
 - Add helper methods ``ok()``, ``warning()``, ``critical()``, ``unknown()`` in ``Context``
 - Add the ``setup_argparse`` function
-- Add the  ``timespan()`` function to convert time interval strings, such as ``2h30min``,  into seconds.
 - Merge all code into a single source file,
 - Merge the entire code base into a single file to make it easier to embed the code
   in a monitoring plugin instead of importing it. This allows a plugin to be
@@ -23,6 +22,9 @@ This is a fork of the `nagiosplugin`_. Changes:
 - Do not remove leading unfilled semicolons in the rendered performance data
 - Add additional parameters (``invert``, ``start``, ``end``) to the constructor of the ``Range`` class
 - Allow the return of multiple performance data points in the ``Context.performance`` method
+- Move timespan related code into a subpackage named ``timespan.py``
+- Add the ``convert_timespan_to_sec()`` function to convert time interval strings, such as ``2h30min``,  into seconds.
+- Add class ``Timespan``
 
 About
 -----

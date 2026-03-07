@@ -7,6 +7,8 @@ Unreleased
 - Do not remove leading unfilled semicolons in the rendered performance data
 - Add additional parameters (``invert``, ``start``, ``end``) to the constructor of the ``Range`` class
 - Allow the return of multiple performance data points in the ``Context.performance`` method
+- Add class ``Timespan``
+- Move timespan related code into a subpackage named ``timespan.py``
 
 2.0.0 (2026-03-02)
 ------------------
