@@ -1,11 +1,11 @@
+"""Helper classes and functions to setup the Command Line Interface (cli) of
+monitoring plugins."""
+
 from __future__ import annotations
 
 import sys
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 from typing import Iterator, NoReturn, Optional, Union
-
-"""Helper classes and functions to setup the Command Line Interface (cli) of
-monitoring plugins."""
 
 
 class MultiArg:

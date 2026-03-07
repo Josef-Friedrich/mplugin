@@ -2,13 +2,27 @@
 API docs
 ********
 
+mplugin
+=======
+
 .. automodule:: mplugin
     :members:
 
-.. automodule:: mplugin.timespan
-    :members:
+mplugin.cli
+===========
+
+.. automodule:: mplugin.cli
+
+mplugin.testing
+===============
 
 .. automodule:: mplugin.testing
+    :members:
+
+mplugin.timespan
+================
+
+.. automodule:: mplugin.timespan
     :members:
 
 Indices and tables

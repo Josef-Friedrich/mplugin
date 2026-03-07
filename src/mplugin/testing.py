@@ -1,3 +1,5 @@
+"""Helper classes and methods for testing monitoring plugins."""
+
 from __future__ import annotations
 
 import io

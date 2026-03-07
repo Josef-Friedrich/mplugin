@@ -1,3 +1,7 @@
+"""
+Offers classes and functions to make it easier and more efficient to work with time spans.
+"""
+
 import re
 import typing
 from datetime import datetime
@@ -121,6 +125,7 @@ The following are valid examples of timespan specifications:
 - `2 months 8 days`
 - `1h30m`
 """
+"""This string can be included in the Command Line Interface help text."""
 
 
 class Timespan:
