@@ -29,10 +29,3 @@ mplugin.timespan
 
 .. automodule:: mplugin.timespan
     :members:
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`

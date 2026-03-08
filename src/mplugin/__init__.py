@@ -588,7 +588,7 @@ def guarded(
 
     :param verbose: Optional keyword parameter to control verbosity
         level during early execution (before
-        :meth:`~mplugin.Check.main` has been called). For example,
+        :meth:`~mplugin.main` has been called). For example,
         use `@guarded(verbose=0)` to turn tracebacks in that phase off.
     """
 

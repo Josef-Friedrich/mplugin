@@ -33,19 +33,19 @@ Glossary
       library. Data is retrieved from the system under surveillance using custom
       code. This is where the meat of a plugin is. Data acquisition is performed
       by one or more :term:`domain model` objects which are usually
-      :class:`~mplugin.resource.Resource` subclasses.
+      :class:`~mplugin.Resource` subclasses.
 
    evaluation
       Second step of check execution in the context of the mplugin library.
       Data generated in the :term:`acquisition` step is evaluated according to
-      criteria specified in :class:`~mplugin.context.Context` objects.
+      criteria specified in :class:`~mplugin.Context` objects.
 
    presentation
       Third step of check execution in the context of the mplugin library.
       Outcomes from the :term:`evaluation` step are condensed into a compact
       summary which is suited to inform the admin about relevant system state.
       Data presentation is the responsibility of
-      :class:`~mplugin.summary.Summary` objects which also generate the
+      :class:`~mplugin.Summary` objects which also generate the
       :term:`performance data` output section.
 
    domain model

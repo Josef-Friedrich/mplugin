@@ -42,6 +42,7 @@ build-backend = "uv_build"
 [dependency-groups]
 dev = [
     "mypy>=1.19.1",
+    "numpy>=2.2.6",
     "pytest>=8.4.2",
 ]
 

@@ -10,9 +10,7 @@ Contents
 .. toctree::
    :maxdepth: 2
 
-   readme
-   tutorial/index
-   topic/index
+   guide
    api
    glossary
 
@@ -20,12 +18,8 @@ Indices and tables
 ==================
 
 * :ref:`genindex`
-* :ref:`search`
+* :ref:`modindex`
 
 To download the package, see the `PyPI page`_.
 
 .. _PyPI page: https://pypi.python.org/pypi/mplugin
-
-.. general:
-   http://www.packtpub.com/article/documenting-your-python-project-1
-   http://lusislog.blogspot.de/2011/07/monitoring-sucks-watch-your-language.html

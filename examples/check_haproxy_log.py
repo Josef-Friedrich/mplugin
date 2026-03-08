@@ -18,10 +18,13 @@ user is free in how many thresholds he specifies.
 import argparse
 import itertools
 import re
+from typing import Any, Generator, NoReturn
 
 import numpy
 
 import mplugin
+from mplugin.cli import MultiArg
+from mplugin.persistence import Cookie, LogTail
 
 
 class HAProxyLog(mplugin.Resource):
@@ -36,15 +39,19 @@ class HAProxyLog(mplugin.Resource):
         r"haproxy.*: [0-9.:]+ \[\S+\] .* \d+/\d+/\d+/\d+/(\d+) (\d\d\d) "
     )
 
-    def __init__(self, logfile, statefile, percentiles):
+    logfile: str
+    statefile: str
+    percentiles: list[str]
+
+    def __init__(self, logfile: str, statefile: str, percentiles: list[str]) -> None:
         self.logfile = logfile
-        self.statefile = statefile
+        self.statefile: str = statefile
         self.percentiles = percentiles
 
-    def parse_log(self):
+    def parse_log(self) -> Generator[tuple[int, bool], Any, None]:
         """Yields ttot and error status for each log line."""
-        cookie = mplugin.Cookie(self.statefile)
-        with mplugin.LogTail(self.logfile, cookie) as logfile:
+        cookie = Cookie(self.statefile)
+        with LogTail(self.logfile, cookie) as logfile:
             for line in logfile:
                 match = self.r_logline.search(line.decode())
                 if not match:
@@ -53,13 +60,13 @@ class HAProxyLog(mplugin.Resource):
                 err = not (stat.startswith("2") or stat.startswith("3"))
                 yield int(ttot), err
 
-    def probe(self):
+    def probe(self) -> list[mplugin.Metric]:
         """Computes error rate and t_tot percentiles."""
         data = numpy.fromiter(
             self.parse_log(), dtype=[("ttot", numpy.int32), ("err", numpy.uint16)]
         )
         requests = len(data["err"])
-        metrics = []
+        metrics: list[mplugin.Metric] = []
         if requests:
             for pct in self.percentiles:
                 metrics.append(
@@ -78,7 +85,7 @@ class HAProxyLog(mplugin.Resource):
         return metrics
 
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
     argp = argparse.ArgumentParser()
     argp.add_argument("logfile")
     argp.add_argument("--ew", "--error-warning", metavar="RANGE", default="")
@@ -87,14 +94,14 @@ def parse_args():
         "--tw",
         "--ttot-warning",
         metavar="RANGE[,RANGE,...]",
-        type=mplugin.MultiArg,
+        type=MultiArg,
         default="",
     )
     argp.add_argument(
         "--tc",
         "--ttot-critical",
         metavar="RANGE[,RANGE,...]",
-        type=mplugin.MultiArg,
+        type=MultiArg,
         default="",
     )
     argp.add_argument(
@@ -124,9 +131,9 @@ def parse_args():
 
 
 @mplugin.guarded
-def main():
+def main() -> NoReturn:
     args = parse_args()
-    percentiles = args.percentiles.split(",")
+    percentiles: list[str] = args.percentiles.split(",")
     check = mplugin.Check(
         HAProxyLog(args.logfile, args.state_file, percentiles),
         mplugin.ScalarContext("error_rate", args.ew, args.ec),

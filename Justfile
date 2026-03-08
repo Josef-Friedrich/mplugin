@@ -55,11 +55,10 @@ pin_docs_requirements:
 	rm -rf docs/requirements.txt
 	uv run pip-compile --strip-extras --output-file=docs/requirements.txt docs/requirements.in pyproject.toml
 
-
 # Run ruff check
 lint:
 	uv tool run ruff check --fix
 
 # Perform type checking using mypy
 type_check:
-	uv run mypy src/mplugin tests
+	uv run mypy src/mplugin tests examples
