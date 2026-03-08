@@ -103,7 +103,7 @@ def setup_argparser(
     `Monitoring Plugin Guidelines
     <https://github.com/monitoring-plugins/monitoring-plugin-guidelines/blob/main/monitoring_plugins_interface/02.Input.md>`__.
 
-    This function creates a customized ArgumentParser instance with metadata
+    This function creates a customized :class:`argparse.ArgumentParser` instance with metadata
     and formatting suitable for monitoring plugins. It automatically prefixes
     the plugin name with ``check_`` if not already present.
 
@@ -171,7 +171,11 @@ def setup_argparser(
             "--verbose",
             action="count",
             default=0,
-            help="Increase the output verbosity.",
+            help="Increase the output verbosity. Use this option up to three times (-vvv):"
+            "0: one line output, log.error, log.warning; \n"
+            "1 (-v): multi-line output, log.error, log.warning; \n"
+            "2 (-vv): multi-line output, log.error, log.warning, log.info; \n"
+            "3 (-vvv): multi-line output, log.error, log.warning, log.info, log.debug",
         )
 
     return parser

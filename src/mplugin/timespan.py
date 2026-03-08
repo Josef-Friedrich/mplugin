@@ -117,13 +117,13 @@ units are understood:
 
 The following are valid examples of timespan specifications:
 
-- `1`
-- `1.23`
-- `2.345s`
-- `3min 45.234s`
-- `34min`
-- `2 months 8 days`
-- `1h30m`
+- 1
+- 1.23
+- 2.345s
+- 3min 45.234s
+- 34min
+- 2 months 8 days
+- 1h30m
 """
 """This string can be included in the Command Line Interface help text."""
 
