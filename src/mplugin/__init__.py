@@ -1,3 +1,8 @@
+"""
+.. role:: python(code)
+   :language: python
+"""
+
 from __future__ import annotations
 
 import collections
@@ -19,18 +24,15 @@ import typing_extensions
 __version__: str = metadata.version("mplugin")
 
 
-# error.py
-
-"""Exceptions with special meanings for mplugin."""
+# from error.py: Exceptions with special meanings for mplugin.
 
 
 class CheckError(RuntimeError):
     """Abort check execution.
 
-    This exception should be raised if it becomes clear for a plugin
-    that it is not able to determine the system status. Raising this
-    exception will make the plugin display the exception's argument and
-    exit with an UNKNOWN (3) status.
+    This exception should be raised if a plugin is unable to determine the
+    system status. Raising this exception will cause the plugin to display the
+    exception’s argument and exit with an ``UNKNOWN`` (``3``) status.
     """
 
     pass
@@ -39,9 +41,9 @@ class CheckError(RuntimeError):
 class Timeout(RuntimeError):
     """Maximum check run time exceeded.
 
-    This exception is raised internally by mplugin if the check's
-    run time takes longer than allowed. Check execution is aborted and
-    the plugin exits with an UNKNOWN (3) status.
+    This exception is raised internally by ``mplugin`` if the runtime check takes
+    longer than allowed. The check is aborted and the plugin exits with an
+    ``UNKNOWN`` (``3``) status.
     """
 
     pass
@@ -49,15 +51,11 @@ class Timeout(RuntimeError):
 
 # state.py
 
-"""Classes  to represent check outcomes.
+"""Classes to represent check outcomes.
 
 This module defines :class:`ServiceState` which is the abstract base class
 for check outcomes. The four states defined by the :term:`Monitoring plugin API`
 are represented as singleton subclasses.
-
-Note that the *warning* state is defined by the :class:`Warn` class. The
-class has not been named `Warning` to avoid being confused with the
-built-in Python exception of the same name.
 """
 
 
@@ -69,17 +67,23 @@ def worst(states: list["ServiceState"]) -> "ServiceState":
 class ServiceState:
     """Abstract base class for all states.
 
-    Each state has two constant attributes: :attr:`text` is the short
-    text representation which is printed for example at the beginning of
-    the summary line. :attr:`code` is the corresponding exit code.
+    Each state has two constant attributes:
+
+    - :attr:`code` is the corresponding exit code.
+    - :attr:`text` is the short text representation which is printed for
+      example at the beginning of the summary line.
+
+    :param code: The Plugin API compliant exit code. Must be ``0``, ``1``, ``2`` or ``3``.
+    :param text: The short text representation that is printed, for example, at
+        the beginning of the summary line.
     """
 
     code: int
-    """The Plugin API compliant exit code."""
+    """The Plugin API compliant exit code. Must be ``0``, ``1``, ``2`` or ``3``."""
 
     text: str
-    """The short text representation which is printed for example at the
-    beginning of the summary line."""
+    """The short text representation that is printed, for example, at
+    the beginning of the summary line."""
 
     def __init__(self, code: int, text: str) -> None:
         self.code = code
@@ -114,59 +118,39 @@ class ServiceState:
         return hash((self.code, self.text))
 
 
-class __Ok(ServiceState):
-    def __init__(self) -> None:
-        super().__init__(0, "ok")
-
-
-ok: ServiceState = __Ok()
+ok: ServiceState = ServiceState(0, "ok")
 """The plugin was able to check the service and it appeared to be functioning
 properly."""
 
 
-class __Warning(ServiceState):
-    def __init__(self) -> None:
-        super().__init__(1, "warning")
-
-
-warning: ServiceState = __Warning()
+warning: ServiceState = ServiceState(1, "warning")
 """
 The plugin was able to check the service, but it appeared to be above some
 ``warning`` threshold or did not appear to be working properly."""
 
 
-class __Critical(ServiceState):
-    def __init__(self) -> None:
-        super().__init__(2, "critical")
-
-
-critical: ServiceState = __Critical()
+critical: ServiceState = ServiceState(2, "critical")
 """The plugin detected that either the service was not running or it was above
 some ``critical`` threshold."""
 
 
-class __Unknown(ServiceState):
-    def __init__(self) -> None:
-        super().__init__(3, "unknown")
-
-
-unknown: ServiceState = __Unknown()
+unknown: ServiceState = ServiceState(3, "unknown")
 """Invalid command line arguments were supplied to the plugin or low-level
 failures internal to the plugin (such as unable to fork, or open a tcp socket)
 that prevent it from performing the specified operation. Higher-level errors
 (such as name resolution errors, socket timeouts, etc) are outside of the control
 of plugins and should generally NOT be reported as ``unknown`` states.
 
-The --help or --version output should also result in ``unknown`` state."""
+The ``--help`` or ``--version`` output should also result in ``unknown`` state."""
 
 
 def state(exit_code: int) -> ServiceState:
     """
     Convert an exit code to a ServiceState.
 
-    :param exit_code: The exit code to convert. Must be 0, 1, 2, or 3.
+    :param exit_code: The exit code to convert. Must be ``0``, ``1``, ``2`` or ``3``.
 
-    :return: The corresponding ServiceState (ok, warn, critical, or unknown).
+    :return: The corresponding ServiceState (``ok``, ``warn``, ``critical``, or ``unknown``).
 
     :raises CheckError: If exit_code is greater than 3.
     """
@@ -181,7 +165,7 @@ def state(exit_code: int) -> ServiceState:
     raise CheckError(f"Exit code {exit_code} is > 3")
 
 
-# range.py
+# from range.py:
 
 
 RangeSpec = typing.Union[str, int, float, "Range"]
@@ -195,12 +179,22 @@ class Range:
     omitted, infinity is assumed. To invert the match condition, prefix
     the range expression with ``@``.
 
-    See the
-    `Monitoring plugin guidelines <https://github.com/monitoring-plugins/monitoring-plugin-guidelines/blob/main/definitions/01.range_expressions.md>`__
-    for details.
+    .. seealso::
 
+        See the
+        `Monitoring Plugin Guidelines Repository <https://github.com/monitoring-plugins/monitoring-plugin-guidelines/blob/main/definitions/01.range_expressions.md>`__
+        or the
+        `Monitoring Plugins Development Guidelines <https://www.monitoring-plugins.org/doc/guidelines.html#THRESHOLDFORMAT>`__
+        for details.
 
-    https://www.monitoring-plugins.org/doc/guidelines.html#THRESHOLDFORMAT
+    :param spec: may be either a string, a float, or another
+        Range object.
+    :param invert: If the true, the value exceeds the threshold if it is
+        INSIDE the range between start and end (including the endpoints).
+    :param start: The (inclusive) start point on a numeric scale (possibly
+        negative or negative infinity).
+    :param end: The (inclusive) end point on a numeric scale (possibly
+        negative or positive infinity).
     """
 
     invert: bool
@@ -222,17 +216,7 @@ class Range:
         start: typing.Optional[float] = None,
         end: typing.Optional[float] = None,
     ) -> None:
-        """Creates a Range object according to `spec`.
-
-        :param spec: may be either a string, a float, or another
-            Range object.
-        :param invert: If the true, the value exceeds the threshold if it is
-            INSIDE the range between start and end (including the endpoints).
-        :param start: The (inclusive) start point on a numeric scale (possibly
-            negative or negative infinity).
-        :param end: The (inclusive) end point on a numeric scale (possibly
-            negative or positive infinity).
-        """
+        """Creates a Range object according to `spec`."""
 
         if spec is not None and not (invert is None and start is None and end is None):
             raise ValueError("Specify spec OR invert, start, end! not both")
@@ -471,40 +455,51 @@ class Performance:
     between other mplugin objects.
 
     For sake of consistency, performance data should represent their values in
-    their respective base unit, so ``Performance('size', 10000, 'B')`` is better
-    than ``Performance('size', 10, 'kB')``.
+    their respective base unit, so
+    :python:`Performance('size', 10000, 'B')`
+    is better than
+    :python:`Performance('size', 10, 'kB')`.
 
-    See the
-    `Monitoring plugin guidelines <https://github.com/monitoring-plugins/monitoring-plugin-guidelines/blob/main/monitoring_plugins_interface/03.Output.md#performance-data>`__
-    for details.
+    .. seealso::
 
-    https://www.monitoring-plugins.org/doc/guidelines.html#AEN197
+        See the
+        `Monitoring Plugin Guidelines Repository <https://github.com/monitoring-plugins/monitoring-plugin-guidelines/blob/main/monitoring_plugins_interface/03.Output.md#performance-data>`__
+        or the
+        `Monitoring Plugins Development Guidelines <https://www.monitoring-plugins.org/doc/guidelines.html#AEN197>`__
+        for details.
+
+
+    :param label: The short identifier, results in graph titles for example
+       (20 chars or less recommended).
+    :param value: The measured value (usually an ``int``, ``float``, or ``bool``).
+    :param uom: The unit of measure -- use base units whereever possible.
+    :param warn: The warning range.
+    :param crit: The critical range.
+    :param min: The known value minimum (``None`` for no minimum).
+    :param max: The known value maximum (``None`` for no maximum).
     """
 
     label: str
-    """short identifier, results in graph titles for example (20 chars or less recommended)"""
+    """The short identifier, results in graph titles for example (20 chars or less recommended)."""
 
     value: typing.Any
-    """measured value (usually an int, float, or bool)"""
+    """The measured value (usually an ``int``, ``float``, or ``bool``)."""
 
     uom: typing.Optional[str]
-    """unit of measure -- use base units whereever possible"""
+    """The unit of measure -- use base units whereever possible."""
 
     warn: typing.Optional["RangeSpec"]
-    """warning range"""
+    """The warning range."""
 
     crit: typing.Optional["RangeSpec"]
-    """critical range"""
+    """The critical range."""
 
     min: typing.Optional[float]
-    """known value minimum (None for no minimum)"""
+    """The known value minimum (``None`` for no minimum)."""
 
     max: typing.Optional[float]
-    """known value maximum (None for no maximum)"""
+    """The known value maximum (``None`` for no maximum)."""
 
-    # Changing these now would be API-breaking, so we'll ignore these
-    # shadowed built-ins and the long list of arguments
-    # pylint: disable-next=redefined-builtin,too-many-arguments
     def __init__(
         self,
         label: str,
@@ -515,17 +510,7 @@ class Performance:
         min: typing.Optional[float] = None,
         max: typing.Optional[float] = None,
     ) -> None:
-        """Create new performance data object.
-
-        :param label: short identifier, results in graph
-            titles for example (20 chars or less recommended)
-        :param value: measured value (usually an int, float, or bool)
-        :param uom: unit of measure -- use base units whereever possible
-        :param warn: warning range
-        :param crit: critical range
-        :param min: known value minimum (None for no minimum)
-        :param max: known value maximum (None for no maximum)
-        """
+        """Create new performance data object."""
         if "'" in label or "=" in label:
             raise RuntimeError("label contains illegal characters", label)
         self.label = label
@@ -796,7 +781,7 @@ class _Runtime:
         sys.exit(self.exitcode)
 
 
-# metric.py
+# from metric.py
 
 """Structured representation for data points.
 """
@@ -810,16 +795,46 @@ class Metric:
     emit a list of metrics as result of their :meth:`~.Resource.probe`
     methods.
 
-    The value should be expressed in terms of base units, so Metric('swap',
-    10240, 'B') is better than Metric('swap', 10, 'kiB').
+    The value should be expressed in terms of base units, so
+    :python:`Metric('swap', 10240, 'B')`
+    is better than
+    :python:`Metric('swap', 10, 'kiB')`.
+
+
+    :param name: A short internal identifier for the value -- appears
+        also in the performance data.
+    :param value: A data point. This value vsually has a boolen or numeric type,
+        but other types are also possible.
+    :param uom: :term:`unit of measure`, preferrably as ISO
+        abbreviation like ``s``.
+    :param min: The minimum value or ``None`` if there is no known minimum.
+    :param max: The maximum value or ``None`` if there is no known maximum.
+    :param context: The name of the associated :class:`~.Context` (defaults to the
+        metric’s name if left out).
     """
 
     name: str
+    """A short internal identifier for the value -- appears also in the
+    performance data."""
+
     value: typing.Any
+    """A data point. This value vsually has a boolen or numeric type,
+    but other types are also possible."""
+
     uom: typing.Optional[str] = None
+    """:term:`unit of measure`, preferrably as ISO
+        abbreviation like ``s``."""
+
     min: typing.Optional[float] = None
+    """The minimum value or ``None`` if there is no known minimum."""
+
     max: typing.Optional[float] = None
+    """The maximum value or ``None`` if there is no known maximum."""
+
     context_name: str
+    """The name of the associated :class:`~.Context` (defaults to the
+        metric’s name if left out)."""
+
     __context: typing.Optional["Context"] = None
     __resource: typing.Optional["Resource"] = None
 
@@ -836,19 +851,7 @@ class Metric:
         context: typing.Optional[typing.Union[str, Context]] = None,
         resource: typing.Optional[Resource] = None,
     ) -> None:
-        """Creates new Metric instance.
-
-        :param name: short internal identifier for the value -- appears
-            also in the performance data
-        :param value: data point, usually has a boolen or numeric type,
-            but other types are also possible
-        :param uom: :term:`unit of measure`, preferrably as ISO
-            abbreviation like "s"
-        :param min: minimum value or None if there is no known minimum
-        :param max: maximum value or None if there is no known maximum
-        :param context: name of the associated context (defaults to the
-            metric's name if left out)
-        """
+        """Creates new Metric instance."""
         self.name = name
         self.value = value
         self.uom = uom
@@ -1175,7 +1178,6 @@ class Results:
         container is returned. If *item* is a string, it is used to
         look up a result with the given name.
 
-        :returns: :class:`Result` object
         :raises KeyError: if no matching result is found
         """
         if isinstance(item, int):
@@ -1641,10 +1643,7 @@ class _Contexts:
         return iter(self.by_name)
 
 
-# check.py
-
-"""Controller logic for check execution.
-"""
+# from check.py: Controller logic for check execution.
 
 
 log: logging.Logger = logging.getLogger("mplugin")
@@ -1791,7 +1790,7 @@ class Check:
     ) -> typing.NoReturn:
         """All-in-one control delegation to the runtime environment.
 
-        Get a :class:`~mplugin.runtime.Runtime` instance and
+        Get a :class:`_Runtime` instance and
         perform all phases: run the check (via :meth:`__call__`), print
         results and exit the program with an appropriate status code.
 
@@ -1808,7 +1807,7 @@ class Check:
         """Overall check state.
 
         The most significant (=worst) state seen in :attr:`results` to
-        far. :obj:`~mplugin.unknown` if no results have been
+        far. :obj:`unknown` if no results have been
         collected yet. Corresponds with :attr:`exitcode`. Read-only
         property.
         """
@@ -1838,7 +1837,7 @@ class Check:
         """Additional lines of output.
 
         Long text output if check runs in verbose mode. Also queried
-        from :class:`~mplugin.Summary`. Read-only property.
+        from :class:`Summary`. Read-only property.
         """
         return self.summary.verbose(self.results) or ""
 
