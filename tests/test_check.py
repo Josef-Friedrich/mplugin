@@ -50,7 +50,7 @@ class TestCheck:
     def test_add_summary(self) -> None:
         s = Summary()
         c = Check(s)
-        assert s == c.summary
+        assert s == c._summary  # type: ignore
 
     def test_add_results(self) -> None:
         r = Results()
@@ -153,8 +153,8 @@ class TestCheck:
             ScalarContext("utf8", "1:1", fmt_metric="über {value}"),
         )
         c()
-        assert "über 8 (outside range 1:1)" == c.summary_str
-        assert ["warning: über 8 (outside range 1:1)"] == c.verbose_str
+        assert "über 8 (outside range 1:1)" == c.summary
+        assert ["warning: über 8 (outside range 1:1)"] == c.verbose
 
     def test_set_explicit_name(self) -> None:
         c = Check()
@@ -167,7 +167,7 @@ class TestCheck:
 
     def test_default_summary_if_no_results(self) -> None:
         c = Check()
-        assert "no check results" == c.summary_str
+        assert "no check results" == c.summary
 
     def test_state_if_resource_has_no_metrics(self) -> None:
         c = Check(Resource())
@@ -178,12 +178,12 @@ class TestCheck:
     def test_summary_str_calls_ok_if_state_ok(self) -> None:
         c = Check(FakeSummary())
         c._evaluate_resource(R1_MetricDefaultContext())  # type: ignore
-        assert "I'm feelin' good" == c.summary_str
+        assert "I'm feelin' good" == c.summary
 
     def test_summary_str_calls_problem_if_state_not_ok(self) -> None:
         c = Check(FakeSummary())
         c.results.add(Result(critical))
-        assert "Houston, we have a problem" == c.summary_str
+        assert "Houston, we have a problem" == c.summary
 
     def test_execute(self) -> None:
         def fake_execute(
@@ -201,7 +201,7 @@ class TestCheck:
         Check().main(2, 20, True)
 
     def test_verbose_str(self) -> None:
-        assert "" == Check().verbose_str
+        assert "" == Check().verbose
 
     def test_context_multiple_performance(self) -> None:
         class MyResource(Resource):

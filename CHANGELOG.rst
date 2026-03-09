@@ -11,6 +11,7 @@ Unreleased
 - Move timespan related code into a subpackage named ``timespan.py``
 - Remove unused argument ``linebreak`` in the method ``Output.format_perfdata()``
 - Move command line interface related code into a submodule named ``cli.py``
+- Rename the attributes of the class ``Check`` ``verbose_str`` into ``verbose`` and ``summary_str`` into ``summary``
 
 2.0.0 (2026-03-02)
 ------------------

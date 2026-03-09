@@ -9,8 +9,8 @@ from mplugin import Check, Timeout, _Runtime, guarded, ok  # type: ignore
 
 def make_check() -> Check:
     class FakeCheck:
-        summary_str = "summary"
-        verbose_str = "long output"
+        summary = "summary"
+        verbose = "long output"
         name = "check"
         state = ok
         exitcode = 0

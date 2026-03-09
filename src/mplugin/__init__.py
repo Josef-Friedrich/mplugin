@@ -374,7 +374,7 @@ class _Output:
             if perfdata:
                 self.status += " " + perfdata
         else:
-            self.add_longoutput(check.verbose_str)
+            self.add_longoutput(check.verbose)
             self.longperfdata.append(self.format_perfdata(check))
 
     def format_status(self, check: "Check") -> str:
@@ -382,7 +382,7 @@ class _Output:
             name_prefix = check.name.upper() + " "
         else:
             name_prefix = ""
-        summary_str = check.summary_str.strip()
+        summary_str = check.summary.strip()
         return self._screen_chars(
             "{0}{1}{2}".format(
                 name_prefix,
@@ -405,8 +405,8 @@ class _Output:
         else:
             self.out.append(self._screen_chars(text, "long output"))
 
-    def __str__(self):
-        output = [
+    def __str__(self) -> str:
+        output: list[str] = [
             elem
             for elem in [self.status]
             + self.out
@@ -1290,7 +1290,9 @@ class Summary:
     # should probably be an @abstractmethod.
     # See issue #44
     # pylint: disable-next=no-self-use
-    def verbose(self, results: "Results") -> list[str]:
+    def verbose(
+        self, results: "Results"
+    ) -> typing.Union[str, list[str], tuple[str, ...]]:
         """Provides extra lines if verbose plugin execution is requested.
 
         The default implementation returns a list of all resources that are in
@@ -1681,7 +1683,7 @@ class Check:
 
     resources: list[Resource]
     contexts: _Contexts
-    summary: Summary
+    _summary: Summary
     results: Results
     perfdata: list[str]
     name: str
@@ -1701,7 +1703,7 @@ class Check:
         """
         self.resources = []
         self.contexts = _Contexts()
-        self.summary = Summary()
+        self._summary = Summary()
         self.results = Results()
         self.perfdata = []
         if name is not None:
@@ -1729,7 +1731,7 @@ class Check:
             elif isinstance(obj, Context):
                 self.contexts.add(obj)
             elif isinstance(obj, Summary):
-                self.summary = obj
+                self._summary = obj
             elif isinstance(obj, Results):  # type: ignore
                 self.results = obj
             else:
@@ -1815,7 +1817,7 @@ class Check:
             return unknown
 
     @property
-    def summary_str(self) -> str:
+    def summary(self) -> str:
         """Status line summary string.
 
         The first line of output that summarizes that situation as
@@ -1823,21 +1825,21 @@ class Check:
         :class:`Summary` object. Read-only property.
         """
         if not self.results:
-            return self.summary.empty() or ""
+            return self._summary.empty() or ""
 
         if self.state == ok:
-            return self.summary.ok(self.results) or ""
+            return self._summary.ok(self.results) or ""
 
-        return self.summary.problem(self.results) or ""
+        return self._summary.problem(self.results) or ""
 
     @property
-    def verbose_str(self):
+    def verbose(self) -> typing.Union[str, list[str], tuple[str, ...]]:
         """Additional lines of output.
 
         Long text output if check runs in verbose mode. Also queried
         from :class:`Summary`. Read-only property.
         """
-        return self.summary.verbose(self.results) or ""
+        return self._summary.verbose(self.results) or ""
 
     @property
     def exitcode(self) -> int:

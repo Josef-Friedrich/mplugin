@@ -1,6 +1,30 @@
 The m(onitoring)plugin library
 ==============================
 
+About
+-----
+
+**mplugin** is a Python class library which helps writing Nagios or Icinga
+compatible plugins easily in Python. It cares for much of the boilerplate code
+and default logic commonly found in monitoring checks, including:
+
+- Monitoring Plugin API compliant parameters and output formatting
+- Full monitoring range syntax support
+- Automatic threshold checking
+- Multiple independend measures
+- Custom status line to communicate the main point quickly
+- Long output and performance data
+- Timeout handling
+- Persistent "cookies" to retain state information between check runs
+- Resume log file processing at the point where the last run left
+- No dependencies beyond the Python standard library.
+
+**mplugin** runs on POSIX and Windows systems. It is compatible with
+and Python 3.10 and later.
+
+Fork of nagiosplugin
+--------------------
+
 This is a fork of the `nagiosplugin`_. Changes:
 
 - Drop support for Python versions 3.9 and below
@@ -26,27 +50,7 @@ This is a fork of the `nagiosplugin`_. Changes:
 - Add the ``convert_timespan_to_sec()`` function to convert time interval strings, such as ``2h30min``,  into seconds.
 - Add class ``Timespan``
 - Remove unused argument ``linebreak`` in the method ``Output.format_perfdata()``
-
-About
------
-
-**mplugin** is a Python class library which helps writing Nagios or Icinga
-compatible plugins easily in Python. It cares for much of the boilerplate code
-and default logic commonly found in monitoring checks, including:
-
-- Monitoring Plugin API compliant parameters and output formatting
-- Full monitoring range syntax support
-- Automatic threshold checking
-- Multiple independend measures
-- Custom status line to communicate the main point quickly
-- Long output and performance data
-- Timeout handling
-- Persistent "cookies" to retain state information between check runs
-- Resume log file processing at the point where the last run left
-- No dependencies beyond the Python standard library.
-
-**mplugin** runs on POSIX and Windows systems. It is compatible with
-and Python 3.10 and later.
+- Rename ``verbose_str`` into ``verbose`` and ``summary_str`` into ``summary``
 
 Feedback and Suggestions
 ------------------------

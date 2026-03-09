@@ -8,8 +8,8 @@ from mplugin import Check, _Output, ok  # type: ignore
 class FakeCheck:
     name: Optional[str] = "Fake"
     state = ok
-    summary_str = "check summary"
-    verbose_str = "hello world\n"
+    summary = "check summary"
+    verbose = "hello world\n"
     perfdata = ["foo=1m;2;3", "bar=1s;2;3"]
 
 
@@ -41,7 +41,7 @@ class TestOutput:
     def test_empty_summary_perfdata(self) -> None:
         o = _Output(self.logchan)
         check = FakeCheck()
-        check.summary_str = ""
+        check.summary = ""
         check.perfdata = []
         o.add(cast(Check, check))
         assert "FAKE OK\n" == str(o)
@@ -57,7 +57,7 @@ class TestOutput:
     def test_summary_utf8(self) -> None:
         o = _Output(self.logchan)
         check = FakeCheck()
-        check.summary_str = "utf-8 ümłäúts"
+        check.summary = "utf-8 ümłäúts"
         check.perfdata = []
         o.add(cast(Check, check))
         assert "FAKE OK - utf-8 ümłäúts\n" == "{0}".format(o)
@@ -76,8 +76,8 @@ class TestOutput:
 
     def test_remove_illegal_chars(self) -> None:
         check = FakeCheck()
-        check.summary_str = "PIPE | STATUS"
-        check.verbose_str = "long pipe | output"
+        check.summary = "PIPE | STATUS"
+        check.verbose = "long pipe | output"
         check.perfdata = []
         print("debug pipe | x", file=self.logio)
         o = _Output(self.logchan, verbose=1)
@@ -89,7 +89,7 @@ class TestOutput:
 
     def test_long_perfdata(self) -> None:
         check = FakeCheck()
-        check.verbose_str = ""
+        check.verbose = ""
         check.perfdata = ["duration=340.4ms;500;1000;0"] * 5
         o = _Output(self.logchan, verbose=1)
         o.add(cast(Check, check))
