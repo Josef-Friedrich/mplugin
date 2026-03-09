@@ -25,6 +25,7 @@ This is a fork of the `nagiosplugin`_. Changes:
 - Move timespan related code into a subpackage named ``timespan.py``
 - Add the ``convert_timespan_to_sec()`` function to convert time interval strings, such as ``2h30min``,  into seconds.
 - Add class ``Timespan``
+- Remove unused argument ``linebreak`` in the method ``Output.format_perfdata()``
 
 About
 -----

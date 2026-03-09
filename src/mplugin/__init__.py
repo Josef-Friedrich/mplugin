@@ -375,7 +375,7 @@ class _Output:
                 self.status += " " + perfdata
         else:
             self.add_longoutput(check.verbose_str)
-            self.longperfdata.append(self.format_perfdata(check, 79))
+            self.longperfdata.append(self.format_perfdata(check))
 
     def format_status(self, check: "Check") -> str:
         if check.name:
@@ -392,9 +392,7 @@ class _Output:
             "status line",
         )
 
-    # Needs refactoring, but won't remove now because it's probably API-breaking
-    # pylint: disable-next=unused-argument
-    def format_perfdata(self, check: "Check", linebreak: typing.Any = None) -> str:
+    def format_perfdata(self, check: "Check") -> str:
         if not check.perfdata:
             return ""
         out = " ".join(check.perfdata)
