@@ -1808,7 +1808,7 @@ class Check:
 
         The most significant (=worst) state seen in :attr:`results` to
         far. :obj:`unknown` if no results have been
-        collected yet. Corresponds with :attr:`exitcode`. Read-only
+        collected yet. Corresponds with :attr:`~Check.exitcode`. Read-only
         property.
         """
         try:
@@ -1845,7 +1845,7 @@ class Check:
     def exitcode(self) -> int:
         """Overall check exit code according to the monitoring API.
 
-        Corresponds with :attr:`state`. Read-only property.
+        Corresponds with :py:attr:`~Check.state`. Read-only property.
         """
         try:
             return int(self.results.most_significant_state)
