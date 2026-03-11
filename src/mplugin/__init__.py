@@ -24,9 +24,6 @@ import typing_extensions
 __version__: str = metadata.version("mplugin")
 
 
-# from error.py: Exceptions with special meanings for mplugin.
-
-
 class CheckError(RuntimeError):
     """Abort check execution.
 
@@ -47,16 +44,6 @@ class Timeout(RuntimeError):
     """
 
     pass
-
-
-# from state.py:
-
-"""Classes to represent check outcomes.
-
-This module defines :class:`ServiceState` which is the abstract base class
-for check outcomes. The four states defined by the :term:`Monitoring plugin API`
-are represented as singleton subclasses.
-"""
 
 
 class ServiceState:
@@ -163,9 +150,6 @@ that prevent it from performing the specified operation. Higher-level errors
 of plugins and should generally NOT be reported as ``unknown`` states.
 
 The ``--help`` or ``--version`` output should also result in ``unknown`` state."""
-
-
-# from range.py:
 
 
 RangeSpec = typing.Union[str, int, float, "Range"]
@@ -339,9 +323,6 @@ class Range:
         return "outside range {0}".format(self._format(False))
 
 
-# output.py
-
-
 class _Output:
     ILLEGAL = "|"
 
@@ -432,9 +413,6 @@ class _Output:
         return "warning: removed illegal characters ({0}) from {1}".format(
             hex_chars, where
         )
-
-
-# performance.py
 
 
 class Performance:
@@ -558,15 +536,6 @@ class Performance:
         return re.sub(r";+$", "", ";".join(out))
 
 
-# from runtime.py
-
-"""Functions and classes to interface with the system.
-
-This module contains the :class:`Runtime` class that handles exceptions,
-timeouts and logging. Plugin authors should not use Runtime directly,
-but decorate the plugin's main function with :func:`~.runtime.guarded`.
-"""
-
 P = typing.ParamSpec("P")
 R = typing.TypeVar("R")
 
@@ -592,10 +561,6 @@ def guarded(
 
     def _decorate(func: typing.Callable[P, R]):
         @functools.wraps(func)
-        # This inconsistent-return-statements error can be fixed by adding a
-        # typing.NoReturn type hint to Runtime._handle_exception(), but we can't do
-        # that as long as we're maintaining py27 compatability.
-        # pylint: disable-next=inconsistent-return-statements
         def wrapper(*args: typing.Any, **kwds: typing.Any):
             runtime = _Runtime()
             if verbose is not None:
@@ -622,6 +587,13 @@ def guarded(
 
 
 class _Runtime:
+    """Functions and classes to interface with the system.
+
+    This module contains the :class:`Runtime` class that handles exceptions,
+    timeouts and logging. Plugin authors should not use Runtime directly,
+    but decorate the plugin's main function with :func:`~.runtime.guarded`.
+    """
+
     instance: typing.Optional[typing_extensions.Self] = None  # type: ignore
     check: typing.Optional["Check"] = None
     _verbose = 1
@@ -775,14 +747,8 @@ class _Runtime:
             return f"{start_style}{super().format(record)}{end_style}"
 
 
-# from metric.py
-
-"""Structured representation for data points.
-"""
-
-
 class Metric:
-    """Single measured value.
+    """Single measured value. Structured representation for data points.
 
     Instances of ths class are passed as value objects between most of
     mplugin's core classes. Typically, :class:`~.Resource` objects
@@ -948,14 +914,10 @@ class Metric:
         return output
 
 
-# resource.py
-
-"""Domain model for data :term:`acquisition`.
-"""
-
-
 class Resource:
     """Abstract base class for custom domain models.
+
+    Domain model for data :term:`acquisition`.
 
     :class:`Resource` is the base class for the plugin's :term:`domain
     model`. It shoul model the relevant details of reality that a plugin is
@@ -975,9 +937,6 @@ class Resource:
     def name(self) -> str:
         return self.__class__.__name__
 
-    # This could be corrected by re-implementing this class as a proper ABC.
-    # See issue #42
-    # pylint: disable=no-self-use
     def probe(
         self,
     ) -> typing.Union[list["Metric"], "Metric", typing.Generator["Metric", None, None]]:
@@ -1018,19 +977,6 @@ class Resource:
         return []
 
 
-# result.py
-
-"""Outcomes from evaluating metrics in contexts.
-
-The :class:`Result` class is the base class for all evaluation results.
-The :class:`Results` class (plural form) provides a result container with
-access functions and iterators.
-
-Plugin authors may create their own :class:`Result` subclass to
-accomodate for special needs.
-"""
-
-
 class Result:
     """Evaluation outcome consisting of state and explanation.
 
@@ -1039,6 +985,15 @@ class Result:
     outcome of an evaluation. It contains a
     :class:`~mplugin.state.ServiceState` as well as an explanation.
     Plugin authors may subclass Result to implement specific features.
+
+    Outcomes from evaluating metrics in contexts.
+
+    The :class:`Result` class is the base class for all evaluation results.
+    The :class:`Results` class (plural form) provides a result container with
+    access functions and iterators.
+
+    Plugin authors may create their own :class:`Result` subclass to
+    accomodate for special needs.
     """
 
     state: "ServiceState"
@@ -1219,38 +1174,28 @@ class Results:
         return self.most_significant[0]
 
 
-# summary.py
-
-"""Create status line from results.
-
-This module contains the :class:`Summary` class which serves as base
-class to get a status line from the check's :class:`~.result.Results`. A
-Summary object is used by :class:`~.check.Check` to obtain a suitable data
-:term:`presentation` depending on the check's overall state.
-
-Plugin authors may either stick to the default implementation or subclass it
-to adapt it to the check's domain. The status line is probably the most
-important piece of text returned from a check: It must lead directly to the
-problem in the most concise way. So while the default implementation is quite
-usable, plugin authors should consider subclassing to provide a specific
-implementation that gets the output to the point.
-"""
-
-
 class Summary:
     """Creates a summary formatter object.
+
+    Create status line from results.
+
+    This module contains the :class:`Summary` class which serves as base
+    class to get a status line from the check's :class:`~.result.Results`. A
+    Summary object is used by :class:`~.check.Check` to obtain a suitable data
+    :term:`presentation` depending on the check's overall state.
+
+    Plugin authors may either stick to the default implementation or subclass it
+    to adapt it to the check's domain. The status line is probably the most
+    important piece of text returned from a check: It must lead directly to the
+    problem in the most concise way. So while the default implementation is quite
+    usable, plugin authors should consider subclassing to provide a specific
+    implementation that gets the output to the point.
 
     This base class takes no parameters in its constructor, but subclasses may
     provide more elaborate constructors that accept parameters to influence
     output creation.
     """
 
-    # It might be possible to re-implement this as a @staticmethod,
-    # but this might be an API-breaking change, so it should probably stay in
-    # place until a 2.x rewrite.  If this can't be a @staticmethod, then it
-    # should probably be an @abstractmethod.
-    # See issue #44
-    # pylint: disable-next=no-self-use
     def ok(self, results: "Results") -> str:
         """Formats status line when overall state is ok.
 
@@ -1262,12 +1207,6 @@ class Summary:
         """
         return "{0}".format(results[0])
 
-    # It might be possible to re-implement this as a @staticmethod,
-    # but this might be an API-breaking change, so it should probably stay in
-    # place until a 2.x rewrite.  If this can't be a @staticmethod, then it
-    # should probably be an @abstractmethod.
-    # See issue #44
-    # pylint: disable-next=no-self-use
     def problem(self, results: "Results") -> str:
         """Formats status line when overall state is not ok.
 
@@ -1280,12 +1219,6 @@ class Summary:
         """
         return "{0}".format(results.first_significant)
 
-    # It might be possible to re-implement this as a @staticmethod,
-    # but this might be an API-breaking change, so it should probably stay in
-    # place until a 2.x rewrite.  If this can't be a @staticmethod, then it
-    # should probably be an @abstractmethod.
-    # See issue #44
-    # pylint: disable-next=no-self-use
     def verbose(
         self, results: "Results"
     ) -> typing.Union[str, list[str], tuple[str, ...]]:
@@ -1304,12 +1237,6 @@ class Summary:
             msgs.append("{0}: {1}".format(result.state, result))
         return msgs
 
-    # It might be possible to re-implement this as a @staticmethod,
-    # but this might be an API-breaking change, so it should probably stay in
-    # place until a 2.x rewrite.  If this can't be a @staticmethod, then it
-    # should probably be an @abstractmethod.
-    # See issue #44
-    # pylint: disable-next=no-self-use
     def empty(self) -> typing.Literal["no check results"]:
         """Formats status line when the result set is empty.
 
@@ -1318,28 +1245,24 @@ class Summary:
         return "no check results"
 
 
-# context.py
-
-"""Metadata about metrics to perform data :term:`evaluation`.
-
-This module contains the :class:`Context` class, which is the base for
-all contexts. :class:`ScalarContext` is an important specialization to
-cover numeric contexts with warning and critical thresholds. The
-:class:`~.check.Check` controller selects a context for each
-:class:`~.metric.Metric` by matching the metric's `context` attribute with the
-context's `name`. The same context may be used for several metrics.
-
-Plugin authors may just use to :class:`ScalarContext` in the majority of cases.
-Sometimes is better to subclass :class:`Context` instead to implement custom
-evaluation or performance data logic.
-"""
-
-
 FmtMetric = str | typing.Callable[["Metric", "Context"], str]
 
 
 class Context:
     """Creates generic context identified by `name`.
+
+    Metadata about metrics to perform data :term:`evaluation`.
+
+    This module contains the :class:`Context` class, which is the base for
+    all contexts. :class:`ScalarContext` is an important specialization to
+    cover numeric contexts with warning and critical thresholds. The
+    :class:`~.check.Check` controller selects a context for each
+    :class:`~.metric.Metric` by matching the metric's `context` attribute with the
+    context's `name`. The same context may be used for several metrics.
+
+    Plugin authors may just use to :class:`ScalarContext` in the majority of cases.
+    Sometimes is better to subclass :class:`Context` instead to implement custom
+    evaluation or performance data logic.
 
     Generic contexts just format associated metrics and evaluate
     always to :obj:`~mplugin.ok`. Metric formatting is
@@ -1459,9 +1382,6 @@ class Context:
         """
         return self.result(unknown, hint=hint, metric=metric)
 
-    # This could be corrected by re-implementing this class as a proper ABC.
-    # See issue #43
-    # pylint: disable-next=no-self-use
     def performance(
         self, metric: "Metric", resource: "Resource"
     ) -> typing.Optional[
@@ -1637,9 +1557,6 @@ class _Contexts:
 
     def __iter__(self) -> typing.Iterator[str]:
         return iter(self.by_name)
-
-
-# from check.py: Controller logic for check execution.
 
 
 log: logging.Logger = logging.getLogger("mplugin")
