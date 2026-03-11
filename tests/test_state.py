@@ -1,4 +1,4 @@
-from mplugin import critical, ok, unknown, warning, worst
+from mplugin import ServiceState, critical, ok, unknown, warning
 
 
 class TestState:
@@ -17,7 +17,7 @@ class TestState:
 
 class TestWorst:
     def test_not_empty_set(self) -> None:
-        assert critical == worst([ok, critical, warning])
+        assert critical == ServiceState.worst([ok, critical, warning])
 
     def test_empty_set_is_ok(self) -> None:
-        assert ok == worst([])
+        assert ok == ServiceState.worst([])

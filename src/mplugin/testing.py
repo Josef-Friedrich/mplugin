@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Optional
 from unittest.mock import Mock
 
-from mplugin import ServiceState, state
+from mplugin import ServiceState
 
 
 class MockResult:
@@ -44,7 +44,7 @@ class MockResult:
 
     @property
     def state(self) -> ServiceState:
-        return state(self.exitcode)
+        return ServiceState.state(self.exitcode)
 
     @property
     def stdout(self) -> Optional[str]:

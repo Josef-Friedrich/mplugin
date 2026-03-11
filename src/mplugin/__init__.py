@@ -49,7 +49,7 @@ class Timeout(RuntimeError):
     pass
 
 
-# state.py
+# from state.py:
 
 """Classes to represent check outcomes.
 
@@ -57,11 +57,6 @@ This module defines :class:`ServiceState` which is the abstract base class
 for check outcomes. The four states defined by the :term:`Monitoring plugin API`
 are represented as singleton subclasses.
 """
-
-
-def worst(states: list["ServiceState"]) -> "ServiceState":
-    """Reduce list of *states* to the most significant state."""
-    return functools.reduce(lambda a, b: a if a > b else b, states, ok)
 
 
 class ServiceState:
@@ -117,6 +112,32 @@ class ServiceState:
     def __hash__(self) -> int:
         return hash((self.code, self.text))
 
+    @staticmethod
+    def worst(states: list["ServiceState"]) -> "ServiceState":
+        """Reduce list of *states* to the most significant state."""
+        return functools.reduce(lambda a, b: a if a > b else b, states, ok)
+
+    @staticmethod
+    def state(exit_code: int) -> ServiceState:
+        """
+        Convert an exit code to a ServiceState.
+
+        :param exit_code: The exit code to convert. Must be ``0``, ``1``, ``2`` or ``3``.
+
+        :return: The corresponding ServiceState (``ok``, ``warn``, ``critical``, or ``unknown``).
+
+        :raises CheckError: If exit_code is greater than 3.
+        """
+        if exit_code == 0:
+            return ok
+        elif exit_code == 1:
+            return warning
+        elif exit_code == 2:
+            return critical
+        elif exit_code == 3:
+            return unknown
+        raise CheckError(f"Exit code {exit_code} is > 3")
+
 
 ok: ServiceState = ServiceState(0, "ok")
 """The plugin was able to check the service and it appeared to be functioning
@@ -142,27 +163,6 @@ that prevent it from performing the specified operation. Higher-level errors
 of plugins and should generally NOT be reported as ``unknown`` states.
 
 The ``--help`` or ``--version`` output should also result in ``unknown`` state."""
-
-
-def state(exit_code: int) -> ServiceState:
-    """
-    Convert an exit code to a ServiceState.
-
-    :param exit_code: The exit code to convert. Must be ``0``, ``1``, ``2`` or ``3``.
-
-    :return: The corresponding ServiceState (``ok``, ``warn``, ``critical``, or ``unknown``).
-
-    :raises CheckError: If exit_code is greater than 3.
-    """
-    if exit_code == 0:
-        return ok
-    elif exit_code == 1:
-        return warning
-    elif exit_code == 2:
-        return critical
-    elif exit_code == 3:
-        return unknown
-    raise CheckError(f"Exit code {exit_code} is > 3")
 
 
 # from range.py:
@@ -558,7 +558,7 @@ class Performance:
         return re.sub(r";+$", "", ";".join(out))
 
 
-# runtime.py
+# from runtime.py
 
 """Functions and classes to interface with the system.
 
