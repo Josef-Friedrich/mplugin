@@ -621,28 +621,6 @@ def guarded(
     return _decorate  # type: ignore
 
 
-class _AnsiColorFormatter(logging.Formatter):
-    """https://medium.com/@kamilmatejuk/inside-python-colorful-logging-ad3a74442cc6"""
-
-    def format(self, record: logging.LogRecord) -> str:
-        no_style = "\033[0m"
-        bold = "\033[91m"
-        grey = "\033[90m"
-        yellow = "\033[93m"
-        red = "\033[31m"
-        red_light = "\033[91m"
-        blue = "\033[34m"
-        start_style = {
-            "DEBUG": grey,
-            "INFO": blue,
-            "WARNING": yellow,
-            "ERROR": red,
-            "CRITICAL": red_light + bold,
-        }.get(record.levelname, no_style)
-        end_style = no_style
-        return f"{start_style}{super().format(record)}{end_style}"
-
-
 class _Runtime:
     instance: typing.Optional[typing_extensions.Self] = None  # type: ignore
     check: typing.Optional["Check"] = None
@@ -712,7 +690,7 @@ class _Runtime:
     def colorize(self, colorize: bool) -> None:
         self._colorize = colorize
         if colorize:
-            self.logchan.setFormatter(_AnsiColorFormatter("%(message)s"))
+            self.logchan.setFormatter(self._AnsiColorFormatter("%(message)s"))
         else:
             self.logchan.setFormatter(logging.Formatter("%(message)s"))
 
@@ -774,6 +752,27 @@ class _Runtime:
 
     def sysexit(self) -> typing.NoReturn:
         sys.exit(self.exitcode)
+
+    class _AnsiColorFormatter(logging.Formatter):
+        """https://medium.com/@kamilmatejuk/inside-python-colorful-logging-ad3a74442cc6"""
+
+        def format(self, record: logging.LogRecord) -> str:
+            no_style = "\033[0m"
+            bold = "\033[91m"
+            grey = "\033[90m"
+            yellow = "\033[93m"
+            red = "\033[31m"
+            red_light = "\033[91m"
+            blue = "\033[34m"
+            start_style = {
+                "DEBUG": grey,
+                "INFO": blue,
+                "WARNING": yellow,
+                "ERROR": red,
+                "CRITICAL": red_light + bold,
+            }.get(record.levelname, no_style)
+            end_style = no_style
+            return f"{start_style}{super().format(record)}{end_style}"
 
 
 # from metric.py
