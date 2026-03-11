@@ -111,3 +111,38 @@ class TestOutput:
             + "| foo=1\n"
             == str(o)
         )
+
+
+filter_output = _Output._filter_output  # type: ignore
+
+
+class TestFilterOutput:
+    def test_no_filtering(self) -> None:
+        assert filter_output("hello world", "") == "hello world"
+
+    def test_single_character(self) -> None:
+        assert filter_output("hello|world", "|") == "helloworld"
+
+    def test_multiple_characters(self) -> None:
+        assert filter_output("a|b|c", "|") == "abc"
+
+    def test_multiple_filters(self) -> None:
+        assert filter_output("a|b*c", "|*") == "abc"
+
+    def test_all_filtered(self) -> None:
+        assert filter_output("|||", "|") == ""
+
+    def test_no_matches(self) -> None:
+        assert filter_output("hello", "|") == "hello"
+
+    def test_repeated_characters(self) -> None:
+        assert filter_output("aaa|bbb|ccc", "|") == "aaabbbccc"
+
+    def test_empty_string(self) -> None:
+        assert filter_output("", "|") == ""
+
+    def test_empty_filter(self) -> None:
+        assert filter_output("test", "") == "test"
+
+    def test_special_characters(self) -> None:
+        assert filter_output("test@#$%", "@#$%") == "test"

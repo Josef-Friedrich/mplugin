@@ -342,13 +342,6 @@ class Range:
 # output.py
 
 
-def _filter_output(output: str, filtered: str) -> str:
-    """Filters out characters from output"""
-    for char in filtered:
-        output = output.replace(char, "")
-    return output
-
-
 class _Output:
     ILLEGAL = "|"
 
@@ -417,9 +410,16 @@ class _Output:
         ]
         return "\n".join(output) + "\n"
 
+    @staticmethod
+    def _filter_output(output: str, filtered: str) -> str:
+        """Filters out characters from output"""
+        for char in filtered:
+            output = output.replace(char, "")
+        return output
+
     def _screen_chars(self, text: str, where: str) -> str:
         text = text.rstrip("\n")
-        screened = _filter_output(text, self.ILLEGAL)
+        screened = _Output._filter_output(text, self.ILLEGAL)
         if screened != text:
             self.warnings.append(
                 self._illegal_chars_warning(where, set(text) - set(screened))
@@ -435,12 +435,6 @@ class _Output:
 
 
 # performance.py
-
-
-def _quote(label: str) -> str:
-    if re.match(r"^\w+$", label):
-        return label
-    return f"'{label}'"
 
 
 class Performance:
@@ -519,13 +513,19 @@ class Performance:
         self.min = min
         self.max = max
 
+    @staticmethod
+    def _quote(label: str) -> str:
+        if re.match(r"^\w+$", label):
+            return label
+        return f"'{label}'"
+
     def __str__(self) -> str:
         """String representation conforming to the plugin API.
 
         Labels containing spaces or special characters will be quoted.
         """
 
-        performance: str = f"{_quote(self.label)}={self.value}"
+        performance: str = f"{Performance._quote(self.label)}={self.value}"
 
         if self.uom is not None:
             performance += self.uom
@@ -643,39 +643,6 @@ class _AnsiColorFormatter(logging.Formatter):
         return f"{start_style}{super().format(record)}{end_style}"
 
 
-# platform.py
-
-
-def _with_timeout(
-    time: int, func: typing.Callable[P, R], *args: typing.Any, **kwargs: typing.Any
-) -> None:
-    """Call `func` but terminate after `t` seconds."""
-
-    if os.name == "posix":
-        signal = importlib.import_module("signal")
-
-        def timeout_handler(signum: int, frame: typing.Any) -> typing.NoReturn:
-            raise Timeout("{0}s".format(time))
-
-        signal.signal(signal.SIGALRM, timeout_handler)
-        signal.alarm(time)
-        try:
-            func(*args, **kwargs)
-        finally:
-            signal.alarm(0)
-
-    if os.name == "nt":
-        # We use a thread here since NT systems don't have POSIX signals.
-        threading = importlib.import_module("threading")
-
-        func_thread = threading.Thread(target=func, args=args, kwargs=kwargs)
-        func_thread.daemon = True  # quit interpreter even if still running
-        func_thread.start()
-        func_thread.join(time)
-        if func_thread.is_alive():
-            raise Timeout("{0}s".format(time))
-
-
 class _Runtime:
     instance: typing.Optional[typing_extensions.Self] = None  # type: ignore
     check: typing.Optional["Check"] = None
@@ -754,6 +721,36 @@ class _Runtime:
         self.output.add(check)
         self.exitcode = check.exitcode
 
+    @staticmethod
+    def _with_timeout(
+        time: int, func: typing.Callable[P, R], *args: typing.Any, **kwargs: typing.Any
+    ) -> None:
+        """Call `func` but terminate after `t` seconds."""
+
+        if os.name == "posix":
+            signal = importlib.import_module("signal")
+
+            def timeout_handler(signum: int, frame: typing.Any) -> typing.NoReturn:
+                raise Timeout("{0}s".format(time))
+
+            signal.signal(signal.SIGALRM, timeout_handler)
+            signal.alarm(time)
+            try:
+                func(*args, **kwargs)
+            finally:
+                signal.alarm(0)
+
+        if os.name == "nt":
+            # We use a thread here since NT systems don't have POSIX signals.
+            threading = importlib.import_module("threading")
+
+            func_thread = threading.Thread(target=func, args=args, kwargs=kwargs)
+            func_thread.daemon = True  # quit interpreter even if still running
+            func_thread.start()
+            func_thread.join(time)
+            if func_thread.is_alive():
+                raise Timeout("{0}s".format(time))
+
     def execute(
         self,
         check: "Check",
@@ -769,7 +766,7 @@ class _Runtime:
         if colorize:
             self.colorize = True
         if self.timeout:
-            _with_timeout(self.timeout, self.run, check)
+            _Runtime._with_timeout(self.timeout, self.run, check)
         else:
             self.run(check)
         print("{0}".format(self.output), end="", file=self.stdout)

@@ -1,4 +1,5 @@
 import logging
+import time
 from io import StringIO
 from typing import Any, NoReturn, cast
 
@@ -116,3 +117,8 @@ class TestRuntimeException(TestRuntimeBase):
                 pass
 
             main()
+
+
+def test_timeout() -> None:
+    with pytest.raises(Timeout):
+        _Runtime._with_timeout(1, time.sleep, 1)  # type: ignore

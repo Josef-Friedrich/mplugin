@@ -73,3 +73,40 @@ def test_label_with_spaces_gets_quoted() -> None:
 
 def test_label_with_special_chars_gets_quoted() -> None:
     assert "'d-metric'=10" == str(Performance("d-metric", 10))
+
+
+quote = Performance._quote  # type: ignore
+
+
+class TestPerformanceQuote:
+    def test_simple_alphanumeric(self) -> None:
+        """Test that simple alphanumeric labels are not quoted."""
+        assert quote("cpu") == "cpu"
+        assert quote("memory123") == "memory123"
+        assert quote("disk_usage") == "disk_usage"
+
+    def test_with_spaces(self) -> None:
+        """Test that labels with spaces are quoted."""
+        assert quote("cpu load") == "'cpu load'"
+        assert quote("memory usage") == "'memory usage'"
+
+    def test_with_special_characters(self) -> None:
+        """Test that labels with special characters are quoted."""
+        assert quote("cpu-load") == "'cpu-load'"
+        assert quote("memory:usage") == "'memory:usage'"
+        assert quote("disk.usage") == "'disk.usage'"
+        assert quote("cpu@load") == "'cpu@load'"
+
+    def test_with_numbers(self) -> None:
+        """Test that labels starting with numbers are not quoted."""
+        assert quote("1cpu") == "1cpu"
+        assert quote("2memory") == "2memory"
+
+    def test_empty_string(self) -> None:
+        """Test quoting empty string."""
+        assert quote("") == "''"
+
+    def test_underscore_and_alphanumeric(self) -> None:
+        """Test that underscores with alphanumerics don't need quoting."""
+        assert quote("_cpu") == "_cpu"
+        assert quote("cpu_load_avg") == "cpu_load_avg"
