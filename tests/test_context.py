@@ -1,5 +1,3 @@
-from typing import Optional
-
 import pytest
 
 import mplugin
@@ -30,7 +28,7 @@ class TestContext:
 
     def test_fmt_callable(self) -> None:
         def format_metric(metric: Metric, context: Context) -> str:
-            return "{0} formatted by {1}".format(metric.name, context.name)
+            return f"{metric.name} formatted by {context.name}"
 
         m1 = Metric("foo", 1, "s", min=0)
         c = Context("describe_callable", fmt_metric=format_metric)
@@ -79,7 +77,7 @@ class TestSubclassesContext:
 
 class TestScalarContext:
     def test_state_ranges_values(self) -> None:
-        test_cases: list[tuple[int, ServiceState, Optional[str]]] = [
+        test_cases: list[tuple[int, ServiceState, str | None]] = [
             (1, mplugin.ok, None),
             (3, mplugin.warning, "outside range 0:2"),
             (5, mplugin.critical, "outside range 0:4"),

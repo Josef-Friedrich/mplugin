@@ -18,7 +18,8 @@ user is free in how many thresholds he specifies.
 import argparse
 import itertools
 import re
-from typing import Any, Generator, NoReturn
+from collections.abc import Generator
+from typing import Any, NoReturn
 
 import numpy
 

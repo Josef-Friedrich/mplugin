@@ -5,7 +5,8 @@ from __future__ import annotations
 
 import sys
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
-from typing import Iterator, NoReturn, Optional, Union
+from collections.abc import Iterator
+from typing import NoReturn
 
 
 class MultiArg:
@@ -37,15 +38,15 @@ class MultiArg:
     args: list[str]
     """The list of parsed argument strings."""
 
-    fill: Optional[str]
+    fill: str | None
     """An optional default value to return for indices
     beyond the length of the args list. If not provided, the last argument
     is returned instead, or None if the list is empty."""
 
     def __init__(
         self,
-        args: Union[list[str], str],
-        fill: Optional[str] = None,
+        args: list[str] | str,
+        fill: str | None = None,
         splitchar: str = ",",
     ) -> None:
         if isinstance(args, list):
@@ -60,7 +61,7 @@ class MultiArg:
     def __iter__(self) -> Iterator[str]:
         return self.args.__iter__()
 
-    def __getitem__(self, key: int) -> Optional[str]:
+    def __getitem__(self, key: int) -> str | None:
         try:
             return self.args.__getitem__(key)
         except IndexError:
@@ -81,20 +82,20 @@ class __CustomArgumentParser(ArgumentParser):
     <https://github.com/monitoring-plugins/monitoring-plugin-guidelines/blob/main/monitoring_plugins_interface/02.Input.md>`__.
     """
 
-    def exit(self, status: int = 3, message: Optional[str] = None) -> NoReturn:
+    def exit(self, status: int = 3, message: str | None = None) -> NoReturn:
         if message:
             self._print_message(message, sys.stderr)
         sys.exit(status)
 
 
 def setup_argparser(
-    name: Optional[str],
-    version: Optional[str] = None,
-    license: Optional[str] = None,
-    repository: Optional[str] = None,
-    copyright: Optional[str] = None,
-    description: Optional[str] = None,
-    epilog: Optional[str] = None,
+    name: str | None,
+    version: str | None = None,
+    license: str | None = None,
+    repository: str | None = None,
+    copyright: str | None = None,
+    description: str | None = None,
+    epilog: str | None = None,
     verbose: bool = False,
 ) -> ArgumentParser:
     """

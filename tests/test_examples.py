@@ -18,9 +18,7 @@ def run_example(filename: str, regexp: str):
     )
     out, err = proc.communicate()
     assert err == ""
-    assert re.match(regexp, out) is not None, '"{0}" does not match "{1}"'.format(
-        out, regexp
-    )
+    assert re.match(regexp, out) is not None, f'"{out}" does not match "{regexp}"'
     assert 0 == proc.returncode
 
 

@@ -1,12 +1,12 @@
 import io
 import logging
-from typing import Optional, cast
+from typing import cast
 
 from mplugin import Check, _Output, ok  # type: ignore
 
 
 class FakeCheck:
-    name: Optional[str] = "Fake"
+    name: str | None = "Fake"
     state = ok
     summary = "check summary"
     verbose = "hello world\n"
@@ -60,7 +60,7 @@ class TestOutput:
         check.summary = "utf-8 ümłäúts"
         check.perfdata = []
         o.add(cast(Check, check))
-        assert "FAKE OK - utf-8 ümłäúts\n" == "{0}".format(o)
+        assert "FAKE OK - utf-8 ümłäúts\n" == f"{o}"
 
     def test_add_check_singleline(self) -> None:
         o = _Output(self.logchan)

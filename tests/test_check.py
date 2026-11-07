@@ -1,4 +1,5 @@
-from typing import Any, Generator, Optional
+from collections.abc import Generator
+from typing import Any
 
 import pytest
 
@@ -188,8 +189,8 @@ class TestCheck:
     def test_execute(self) -> None:
         def fake_execute(
             check: Check,
-            verbose: Optional[int] = None,
-            timeout: Optional[int] = None,
+            verbose: int | None = None,
+            timeout: int | None = None,
             colorize: bool = False,
         ) -> None:
             assert 2 == verbose

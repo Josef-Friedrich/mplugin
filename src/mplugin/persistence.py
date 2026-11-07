@@ -7,9 +7,10 @@ import io
 import json
 import os
 from collections import UserDict
+from collections.abc import Generator
 from tempfile import TemporaryFile
 from types import TracebackType
-from typing import Any, Generator, Optional, cast
+from typing import Any, cast
 
 from typing_extensions import Self
 
@@ -53,13 +54,13 @@ class Cookie(UserDict[str, Any]):
         argument).
     """
 
-    path: Optional[str]
+    path: str | None
 
-    fobj: Optional[io.TextIOWrapper]
+    fobj: io.TextIOWrapper | None
 
-    def __init__(self, statefile: Optional[str] = None) -> None:
+    def __init__(self, statefile: str | None = None) -> None:
 
-        super(Cookie, self).__init__()
+        super().__init__()
         self.path = statefile
         self.fobj = None
 
@@ -78,9 +79,9 @@ class Cookie(UserDict[str, Any]):
 
     def __exit__(
         self,
-        exc_type: Optional[type[BaseException]],
-        exc_value: Optional[BaseException],
-        traceback: Optional[TracebackType],
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
     ) -> None:
         if not exc_type:
             self.commit()
@@ -118,7 +119,7 @@ class Cookie(UserDict[str, Any]):
         # mode='a+' has problems with mixed R/W operation on Mac OS X
         try:
             return open(self.path, "r+", encoding="ascii")
-        except IOError:
+        except OSError:
             return open(self.path, "w+", encoding="ascii")
 
     def _load(self) -> dict[str, Any]:
@@ -152,7 +153,7 @@ class Cookie(UserDict[str, Any]):
         content is saved in a durable way.
         """
         if not self.fobj:
-            raise IOError("cannot commit closed cookie", self.path)
+            raise OSError("cannot commit closed cookie", self.path)
         self.fobj.seek(0)
         self.fobj.truncate()
         json.dump(self.data, self.fobj)
@@ -174,8 +175,8 @@ class LogTail:
 
     path: str
     cookie: Cookie
-    logfile: Optional[io.BufferedIOBase] = None
-    stat: Optional[os.stat_result]
+    logfile: io.BufferedIOBase | None = None
+    stat: os.stat_result | None
 
     def __init__(self, path: str, cookie: Cookie) -> None:
         """Creates new LogTail context.
@@ -220,9 +221,9 @@ class LogTail:
 
     def __exit__(
         self,
-        exc_type: Optional[type[BaseException]],
-        exc_value: Optional[BaseException],
-        traceback: Optional[TracebackType],
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
     ) -> None:
         if not exc_type and self.stat is not None and self.logfile is not None:
             self.cookie[self.path] = dict(

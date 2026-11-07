@@ -6,7 +6,6 @@ import io
 import os
 import subprocess
 from pathlib import Path
-from typing import Optional
 from unittest.mock import Mock
 
 from mplugin import ServiceState
@@ -16,14 +15,14 @@ class MockResult:
     """A class to collect the result of a mocked execution."""
 
     __sys_exit: Mock
-    __stdout: Optional[str] = None
-    __stderr: Optional[str] = None
+    __stdout: str | None = None
+    __stderr: str | None = None
 
     def __init__(
         self,
         sys_exit_mock: Mock,
-        stdout: Optional[io.StringIO],
-        stderr: Optional[io.StringIO],
+        stdout: io.StringIO | None,
+        stderr: io.StringIO | None,
     ) -> None:
         self.__sys_exit = sys_exit_mock
 
@@ -47,13 +46,13 @@ class MockResult:
         return ServiceState.state(self.exitcode)
 
     @property
-    def stdout(self) -> Optional[str]:
+    def stdout(self) -> str | None:
         if self.__stdout:
             return self.__stdout
         return None
 
     @property
-    def stderr(self) -> Optional[str]:
+    def stderr(self) -> str | None:
         if self.__stderr:
             return self.__stderr
         return None
@@ -71,7 +70,7 @@ class MockResult:
         return out
 
     @property
-    def first_line(self) -> Optional[str]:
+    def first_line(self) -> str | None:
         """The first line of the output without a newline break at the
         end as a string.
         """

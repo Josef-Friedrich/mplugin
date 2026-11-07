@@ -53,9 +53,8 @@ class TestCookie:
         assert True
 
     def test_close_within_with_block_fails(self) -> None:
-        with pytest.raises(IOError):
-            with Cookie(self.tf.name) as c:
-                c.close()
+        with pytest.raises(IOError), Cookie(self.tf.name) as c:
+            c.close()
 
     def test_multiple_commit(self) -> None:
         c = Cookie(self.tf.name)

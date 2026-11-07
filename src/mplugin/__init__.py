@@ -32,8 +32,6 @@ class CheckError(RuntimeError):
     exception’s argument and exit with an ``UNKNOWN`` (``3``) status.
     """
 
-    pass
-
 
 class Timeout(RuntimeError):
     """Maximum check run time exceeded.
@@ -42,8 +40,6 @@ class Timeout(RuntimeError):
     longer than allowed. The check is aborted and the plugin exits with an
     ``UNKNOWN`` (``3``) status.
     """
-
-    pass
 
 
 class ServiceState:
@@ -86,7 +82,7 @@ class ServiceState:
             and self.code > other.code
         )
 
-    def __eq__(self, other: typing.Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         return (
             hasattr(other, "code")
             and isinstance(other.code, int)
@@ -100,9 +96,9 @@ class ServiceState:
         return hash((self.code, self.text))
 
     @staticmethod
-    def worst(states: list["ServiceState"]) -> "ServiceState":
+    def worst(states: list[ServiceState]) -> ServiceState:
         """Reduce list of *states* to the most significant state."""
-        return functools.reduce(lambda a, b: a if a > b else b, states, ok)
+        return functools.reduce(lambda a, b: max(b, a), states, ok)
 
     @staticmethod
     def state(exit_code: int) -> ServiceState:
@@ -195,10 +191,10 @@ class Range:
 
     def __init__(
         self,
-        spec: typing.Optional[RangeSpec] = None,
-        invert: typing.Optional[bool] = None,
-        start: typing.Optional[float] = None,
-        end: typing.Optional[float] = None,
+        spec: RangeSpec | None = None,
+        invert: bool | None = None,
+        start: float | None = None,
+        end: float | None = None,
     ) -> None:
         """Creates a Range object according to `spec`."""
 
@@ -295,9 +291,9 @@ class Range:
         if self.start == float("-inf"):
             result.append("~:")
         elif not omit_zero_start or self.start != 0:
-            result.append(("%s:" % self.start))
+            result.append("%s:" % self.start)
         if self.end != float("inf"):
-            result.append(("%s" % self.end))
+            result.append("%s" % self.end)
         return "".join(result)
 
     def __str__(self) -> str:
@@ -320,7 +316,7 @@ class Range:
     @property
     def violation(self) -> str:
         """Human-readable description why a value does not match."""
-        return "outside range {0}".format(self._format(False))
+        return f"outside range {self._format(False)}"
 
 
 class _Output:
@@ -341,7 +337,7 @@ class _Output:
         self.warnings = []
         self.longperfdata = []
 
-    def add(self, check: "Check") -> None:
+    def add(self, check: Check) -> None:
         self.status = self.format_status(check)
         if self.verbose == 0:
             perfdata = self.format_perfdata(check)
@@ -351,7 +347,7 @@ class _Output:
             self.add_longoutput(check.verbose)
             self.longperfdata.append(self.format_perfdata(check))
 
-    def format_status(self, check: "Check") -> str:
+    def format_status(self, check: Check) -> str:
         if check.name:
             name_prefix = check.name.upper() + " "
         else:
@@ -366,7 +362,7 @@ class _Output:
             "status line",
         )
 
-    def format_perfdata(self, check: "Check") -> str:
+    def format_perfdata(self, check: Check) -> str:
         if not check.perfdata:
             return ""
         out = " ".join(check.perfdata)
@@ -409,10 +405,8 @@ class _Output:
 
     @staticmethod
     def _illegal_chars_warning(where: str, removed_chars: set[str]) -> str:
-        hex_chars = ", ".join("0x{0:x}".format(ord(c)) for c in removed_chars)
-        return "warning: removed illegal characters ({0}) from {1}".format(
-            hex_chars, where
-        )
+        hex_chars = ", ".join(f"0x{ord(c):x}" for c in removed_chars)
+        return f"warning: removed illegal characters ({hex_chars}) from {where}"
 
 
 class Performance:
@@ -455,30 +449,30 @@ class Performance:
     value: typing.Any
     """The measured value (usually an ``int``, ``float``, or ``bool``)."""
 
-    uom: typing.Optional[str]
+    uom: str | None
     """The unit of measure -- use base units whereever possible."""
 
-    warn: typing.Optional["RangeSpec"]
+    warn: RangeSpec | None
     """The warning range."""
 
-    crit: typing.Optional["RangeSpec"]
+    crit: RangeSpec | None
     """The critical range."""
 
-    min: typing.Optional[float]
+    min: float | None
     """The known value minimum (``None`` for no minimum)."""
 
-    max: typing.Optional[float]
+    max: float | None
     """The known value maximum (``None`` for no maximum)."""
 
     def __init__(
         self,
         label: str,
         value: typing.Any,
-        uom: typing.Optional[str] = None,
-        warn: typing.Optional["RangeSpec"] = None,
-        crit: typing.Optional["RangeSpec"] = None,
-        min: typing.Optional[float] = None,
-        max: typing.Optional[float] = None,
+        uom: str | None = None,
+        warn: RangeSpec | None = None,
+        crit: RangeSpec | None = None,
+        min: float | None = None,
+        max: float | None = None,
     ) -> None:
         """Create new performance data object."""
         if "'" in label or "=" in label:
@@ -569,7 +563,7 @@ def guarded(
                 return func(*args, **kwds)
             except Timeout as exc:
                 runtime._handle_exception(  # type: ignore
-                    "Timeout: check execution aborted after {0}".format(exc)
+                    f"Timeout: check execution aborted after {exc}"
                 )
             except Exception:
                 runtime._handle_exception()  # type: ignore
@@ -578,9 +572,7 @@ def guarded(
 
     if original_function is not None:
         assert callable(original_function), (
-            'Function {!r} not callable. Forgot to add "verbose=" keyword?'.format(
-                original_function
-            )
+            f'Function {original_function!r} not callable. Forgot to add "verbose=" keyword?'
         )
         return _decorate(original_function)
     return _decorate  # type: ignore
@@ -594,20 +586,20 @@ class _Runtime:
     but decorate the plugin's main function with :func:`~.runtime.guarded`.
     """
 
-    instance: typing.Optional[typing_extensions.Self] = None  # type: ignore
-    check: typing.Optional["Check"] = None
+    instance: typing_extensions.Self | None = None  # type: ignore
+    check: Check | None = None
     _verbose = 1
     _colorize: bool = False
     """Use ANSI colors to colorize the logging output"""
-    timeout: typing.Optional[int] = None
+    timeout: int | None = None
     logchan: logging.StreamHandler[io.StringIO]
     output: _Output
-    stdout: typing.Optional[io.StringIO] = None
+    stdout: io.StringIO | None = None
     exitcode: int = 70  # EX_SOFTWARE
 
     def __new__(cls) -> typing_extensions.Self:
         if not cls.instance:
-            cls.instance: typing_extensions.Self = super(_Runtime, cls).__new__(cls)
+            cls.instance: typing_extensions.Self = super().__new__(cls)
         return cls.instance
 
     def __init__(self) -> None:
@@ -618,18 +610,13 @@ class _Runtime:
         rootlogger.addHandler(self.logchan)
         self.output = _Output(self.logchan)
 
-    def _handle_exception(
-        self, statusline: typing.Optional[str] = None
-    ) -> typing.NoReturn:
+    def _handle_exception(self, statusline: str | None = None) -> typing.NoReturn:
         exc_type, value = sys.exc_info()[0:2]
         name = self.check.name.upper() + " " if self.check else ""
-        self.output.status = "{0}UNKNOWN: {1}".format(
-            name,
-            statusline or traceback.format_exception_only(exc_type, value)[0].strip(),
-        )
+        self.output.status = f"{name}UNKNOWN: {statusline or traceback.format_exception_only(exc_type, value)[0].strip()}"
         if self.verbose > 0:
             self.output.add_longoutput(traceback.format_exc())
-        print("{0}".format(self.output), end="", file=self.stdout)
+        print(f"{self.output}", end="", file=self.stdout)
         self.exitcode = 3
         self.sysexit()
 
@@ -666,7 +653,7 @@ class _Runtime:
         else:
             self.logchan.setFormatter(logging.Formatter("%(message)s"))
 
-    def run(self, check: "Check") -> None:
+    def run(self, check: Check) -> None:
         check()
         self.output.add(check)
         self.exitcode = check.exitcode
@@ -681,7 +668,7 @@ class _Runtime:
             signal = importlib.import_module("signal")
 
             def timeout_handler(signum: int, frame: typing.Any) -> typing.NoReturn:
-                raise Timeout("{0}s".format(time))
+                raise Timeout(f"{time}s")
 
             signal.signal(signal.SIGALRM, timeout_handler)
             signal.alarm(time)
@@ -699,11 +686,11 @@ class _Runtime:
             func_thread.start()
             func_thread.join(time)
             if func_thread.is_alive():
-                raise Timeout("{0}s".format(time))
+                raise Timeout(f"{time}s")
 
     def execute(
         self,
-        check: "Check",
+        check: Check,
         verbose: typing.Any = None,
         timeout: typing.Any = None,
         colorize: bool = False,
@@ -719,7 +706,7 @@ class _Runtime:
             _Runtime._with_timeout(self.timeout, self.run, check)
         else:
             self.run(check)
-        print("{0}".format(self.output), end="", file=self.stdout)
+        print(f"{self.output}", end="", file=self.stdout)
         self.sysexit()
 
     def sysexit(self) -> typing.NoReturn:
@@ -781,22 +768,22 @@ class Metric:
     """A data point. This value vsually has a boolen or numeric type,
     but other types are also possible."""
 
-    uom: typing.Optional[str] = None
+    uom: str | None = None
     """:term:`unit of measure`, preferrably as ISO
         abbreviation like ``s``."""
 
-    min: typing.Optional[float] = None
+    min: float | None = None
     """The minimum value or ``None`` if there is no known minimum."""
 
-    max: typing.Optional[float] = None
+    max: float | None = None
     """The maximum value or ``None`` if there is no known maximum."""
 
     context_name: str
     """The name of the associated :class:`~.Context` (defaults to the
         metric’s name if left out)."""
 
-    __context: typing.Optional["Context"] = None
-    __resource: typing.Optional["Resource"] = None
+    __context: Context | None = None
+    __resource: Resource | None = None
 
     # Changing these now would be API-breaking, so we'll ignore these
     # shadowed built-ins
@@ -805,11 +792,11 @@ class Metric:
         self,
         name: str,
         value: typing.Any,
-        uom: typing.Optional[str] = None,
-        min: typing.Optional[float] = None,
-        max: typing.Optional[float] = None,
-        context: typing.Optional[typing.Union[str, Context]] = None,
-        resource: typing.Optional[Resource] = None,
+        uom: str | None = None,
+        min: float | None = None,
+        max: float | None = None,
+        context: str | Context | None = None,
+        resource: Resource | None = None,
     ) -> None:
         """Creates new Metric instance."""
         self.name = name
@@ -853,7 +840,7 @@ class Metric:
         self.__context = context
 
     @property
-    def description(self) -> typing.Optional[str]:
+    def description(self) -> str | None:
         """Human-readable, detailed string representation.
 
         Delegates to the :class:`~.context.Context` to format the value.
@@ -884,7 +871,7 @@ class Metric:
             return "%.4g" % self.value
         return str(self.value)
 
-    def evaluate(self) -> typing.Union["Result", "ServiceState"]:
+    def evaluate(self) -> Result | ServiceState:
         """Evaluates this instance according to the context.
 
         :return: :class:`~mplugin.Result` object
@@ -939,7 +926,7 @@ class Resource:
 
     def probe(
         self,
-    ) -> typing.Union[list["Metric"], "Metric", typing.Generator["Metric", None, None]]:
+    ) -> list[Metric] | Metric | typing.Generator[Metric, None, None]:
         """Query system state and return metrics.
 
         This is the only method called by the check controller.
@@ -996,17 +983,17 @@ class Result:
     accomodate for special needs.
     """
 
-    state: "ServiceState"
+    state: ServiceState
 
-    hint: typing.Optional[str]
+    hint: str | None
 
-    metric: typing.Optional["Metric"]
+    metric: Metric | None
 
     def __init__(
         self,
-        state: "ServiceState",
-        hint: typing.Optional[str] = None,
-        metric: typing.Optional["Metric"] = None,
+        state: ServiceState,
+        hint: str | None = None,
+        metric: Metric | None = None,
     ) -> None:
         self.state = state
         self.hint = hint
@@ -1029,7 +1016,7 @@ class Result:
             desc = None
 
         if self.hint and desc:
-            return "{0} ({1})".format(desc, self.hint)
+            return f"{desc} ({self.hint})"
         if self.hint:
             return self.hint
         if desc:
@@ -1037,14 +1024,14 @@ class Result:
         return ""
 
     @property
-    def resource(self) -> typing.Optional["Resource"]:
+    def resource(self) -> Resource | None:
         """Reference to the resource used to generate this result."""
         if not self.metric:
             return None
         return self.metric.resource
 
     @property
-    def context(self) -> typing.Optional["Context"]:
+    def context(self) -> Context | None:
         """Reference to the metric used to generate this result."""
         if not self.metric:
             return None
@@ -1073,7 +1060,7 @@ class Results:
     """
 
     results: list[Result]
-    by_state: dict["ServiceState", list[Result]]
+    by_state: dict[ServiceState, list[Result]]
     by_name: dict[str, Result]
 
     def __init__(self, *results: Result) -> None:
@@ -1120,7 +1107,7 @@ class Results:
         """Number of results in this container."""
         return len(self.results)
 
-    def __getitem__(self, item: typing.Union[int, str]) -> Result:
+    def __getitem__(self, item: int | str) -> Result:
         """Access result by index or name.
 
         If *item* is an integer, the itemth element in the
@@ -1141,7 +1128,7 @@ class Results:
         return name in self.by_name
 
     @property
-    def most_significant_state(self) -> "ServiceState":
+    def most_significant_state(self) -> ServiceState:
         """The "worst" state found in all results.
 
         :returns: :obj:`~mplugin.state.ServiceState` object
@@ -1196,7 +1183,7 @@ class Summary:
     output creation.
     """
 
-    def ok(self, results: "Results") -> str:
+    def ok(self, results: Results) -> str:
         """Formats status line when overall state is ok.
 
         The default implementation returns a string representation of
@@ -1205,9 +1192,9 @@ class Summary:
         :param results: :class:`~mplugin.Results` container
         :returns: status line
         """
-        return "{0}".format(results[0])
+        return f"{results[0]}"
 
-    def problem(self, results: "Results") -> str:
+    def problem(self, results: Results) -> str:
         """Formats status line when overall state is not ok.
 
         The default implementation returns a string representation of te
@@ -1217,11 +1204,9 @@ class Summary:
         :param results: :class:`~.result.Results` container
         :returns: status line
         """
-        return "{0}".format(results.first_significant)
+        return f"{results.first_significant}"
 
-    def verbose(
-        self, results: "Results"
-    ) -> typing.Union[str, list[str], tuple[str, ...]]:
+    def verbose(self, results: Results) -> str | list[str] | tuple[str, ...]:
         """Provides extra lines if verbose plugin execution is requested.
 
         The default implementation returns a list of all resources that are in
@@ -1234,7 +1219,7 @@ class Summary:
         for result in results:
             if result.state == ok:
                 continue
-            msgs.append("{0}: {1}".format(result.state, result))
+            msgs.append(f"{result.state}: {result}")
         return msgs
 
     def empty(self) -> typing.Literal["no check results"]:
@@ -1277,20 +1262,18 @@ class Context:
     """
 
     name: str
-    fmt_metric: typing.Optional[FmtMetric]
+    fmt_metric: FmtMetric | None
 
     def __init__(
         self,
         name: str,
-        fmt_metric: typing.Optional[FmtMetric] = None,
+        fmt_metric: FmtMetric | None = None,
     ) -> None:
 
         self.name = name
         self.fmt_metric = fmt_metric
 
-    def evaluate(
-        self, metric: "Metric", resource: "Resource"
-    ) -> typing.Union[Result, ServiceState]:
+    def evaluate(self, metric: Metric, resource: Resource) -> Result | ServiceState:
         """Determines state of a given metric.
 
         This base implementation returns :class:`~mplugin.ok`
@@ -1308,8 +1291,8 @@ class Context:
     def result(
         self,
         state: ServiceState,
-        hint: typing.Optional[str] = None,
-        metric: typing.Optional["Metric"] = None,
+        hint: str | None = None,
+        metric: Metric | None = None,
     ) -> Result:
         """
         Create a Result object with the given state, hint, and metric.
@@ -1324,8 +1307,8 @@ class Context:
 
     def ok(
         self,
-        hint: typing.Optional[str] = None,
-        metric: typing.Optional["Metric"] = None,
+        hint: str | None = None,
+        metric: Metric | None = None,
     ) -> Result:
         """
         Create a successful Result.
@@ -1339,8 +1322,8 @@ class Context:
 
     def warning(
         self,
-        hint: typing.Optional[str] = None,
-        metric: typing.Optional["Metric"] = None,
+        hint: str | None = None,
+        metric: Metric | None = None,
     ) -> Result:
         """
         Create a warning result.
@@ -1354,8 +1337,8 @@ class Context:
 
     def critical(
         self,
-        hint: typing.Optional[str] = None,
-        metric: typing.Optional["Metric"] = None,
+        hint: str | None = None,
+        metric: Metric | None = None,
     ) -> Result:
         """
         Create a critical result.
@@ -1369,8 +1352,8 @@ class Context:
 
     def unknown(
         self,
-        hint: typing.Optional[str] = None,
-        metric: typing.Optional["Metric"] = None,
+        hint: str | None = None,
+        metric: Metric | None = None,
     ) -> Result:
         """
         Create a Result object with an unknown status.
@@ -1383,14 +1366,13 @@ class Context:
         return self.result(unknown, hint=hint, metric=metric)
 
     def performance(
-        self, metric: "Metric", resource: "Resource"
-    ) -> typing.Optional[
-        typing.Union[
-            Performance,
-            typing.Sequence[Performance],
-            typing.Generator[Performance, typing.Any, None],
-        ]
-    ]:
+        self, metric: Metric, resource: Resource
+    ) -> (
+        Performance
+        | typing.Sequence[Performance]
+        | typing.Generator[Performance, typing.Any, None]
+        | None
+    ):
         """Derives performance data from a given metric.
 
         This base implementation just returns none. Plugin authors may
@@ -1426,7 +1408,7 @@ class Context:
         """
         return None
 
-    def describe(self, metric: "Metric") -> typing.Optional[str]:
+    def describe(self, metric: Metric) -> str | None:
         """Provides human-readable metric description.
 
         Formats the metric according to the :attr:`fmt_metric`
@@ -1466,8 +1448,8 @@ class ScalarContext(Context):
     def __init__(
         self,
         name: str,
-        warning: typing.Optional[RangeSpec] = None,
-        critical: typing.Optional[RangeSpec] = None,
+        warning: RangeSpec | None = None,
+        critical: RangeSpec | None = None,
         fmt_metric: FmtMetric = "{name} is {valueunit}",
     ) -> None:
         """Ready-to-use :class:`Context` subclass for scalar values.
@@ -1483,11 +1465,11 @@ class ScalarContext(Context):
         :param critical: Critical threshold as
             :class:`~mplugin.Range` object or range string.
         """
-        super(ScalarContext, self).__init__(name, fmt_metric)
+        super().__init__(name, fmt_metric)
         self.warn_range = Range(warning)
         self.critical_range = Range(critical)
 
-    def evaluate(self, metric: "Metric", resource: "Resource") -> Result:
+    def evaluate(self, metric: Metric, resource: Resource) -> Result:
         """Compares metric with ranges and determines result state.
 
         The metric's value is compared to the instance's :attr:`warning`
@@ -1506,7 +1488,7 @@ class ScalarContext(Context):
             return self.warning(self.warn_range.violation, metric)
         return self.ok(None, metric)
 
-    def performance(self, metric: "Metric", resource: "Resource") -> Performance:
+    def performance(self, metric: Metric, resource: Resource) -> Performance:
         """Derives performance data.
 
         The metric's attributes are combined with the local
@@ -1604,7 +1586,7 @@ class Check:
     def __init__(
         self,
         *objects: Resource | Context | Summary | Results,
-        name: typing.Optional[str] = None,
+        name: str | None = None,
     ) -> None:
         """Creates and configures a check.
 
@@ -1648,7 +1630,7 @@ class Check:
             elif isinstance(obj, Results):  # type: ignore
                 self.results = obj
             else:
-                raise TypeError("cannot add type {0} to check".format(type(obj)), obj)
+                raise TypeError(f"cannot add type {type(obj)} to check", obj)
         return self
 
     def _evaluate_resource(self, resource: Resource) -> None:
@@ -1746,7 +1728,7 @@ class Check:
         return self._summary.problem(self.results) or ""
 
     @property
-    def verbose(self) -> typing.Union[str, list[str], tuple[str, ...]]:
+    def verbose(self) -> str | list[str] | tuple[str, ...]:
         """Additional lines of output.
 
         Long text output if check runs in verbose mode. Also queried

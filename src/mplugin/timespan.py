@@ -4,12 +4,12 @@ Offers classes and functions to make it easier and more efficient to work with t
 
 import re
 from datetime import datetime
-from typing import Any, Optional, Union
+from typing import Any, Optional
 
-DateTimeSpec = Optional[Union[int, float, datetime]]
+DateTimeSpec = Optional[int | float | datetime]
 
 
-def convert_timespan_to_sec(spec: Union[str, int, float]) -> float:
+def convert_timespan_to_sec(spec: str | float) -> float:
     """Convert a timespan format string to seconds.
     If no time unit is specified, generally seconds are assumed.
 
@@ -179,7 +179,7 @@ class Timespan:
         self,
         start: DateTimeSpec = None,
         end: DateTimeSpec = None,
-        timespan_from_now: Optional[Union[int, float]] = None,
+        timespan_from_now: float | None = None,
     ) -> None:
         """ """
         if not (start is None and end is None) and timespan_from_now is not None:
@@ -215,12 +215,12 @@ class Timespan:
             return self.timespan <= other
         raise ValueError("Unsupported type for __le__")
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, int) or isinstance(other, float):
             return self.timespan == other
         raise ValueError("Unsupported type for __eq__")
 
-    def __ne__(self, other: Any) -> bool:
+    def __ne__(self, other: object) -> bool:
         if isinstance(other, int) or isinstance(other, float):
             return self.timespan != other
         raise ValueError("Unsupported type for __ne__")
